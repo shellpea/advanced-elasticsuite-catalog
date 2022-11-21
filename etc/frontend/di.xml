@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Block\Product\ProductList\Toolbar">
+        <plugin
+            name="shellpea_elasticsuite_add_catalog_toolbar_options"
+            type="Shellpea\AdvancedElasticsuiteCatalog\Plugin\AddCatalogToolbarOptions"
+        />
+    </type>
+    <type name="Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Slider">
+        <plugin name="shellpea_elasticsuite_add_slider_toobar_options" type="Shellpea\AdvancedElasticsuiteCatalog\Plugin\AddSliderToolbarOptions"/>
+    </type>
+    <type name="Magento\Catalog\Controller\Category\View">
+        <plugin sortOrder="1" name="shellpea_elasticsuite_after_category_view" type="Shellpea\AdvancedElasticsuiteCatalog\Plugin\AfterCategoryView"/>
+    </type>
+    <type name="Magento\CatalogSearch\Controller\Result\Index">
+        <plugin sortOrder="1" name="shellpea_elasticsuite_after_search_view" type="Shellpea\AdvancedElasticsuiteCatalog\Plugin\AfterSearchView"/>
+    </type>
+    <type name="Magento\Framework\App\PageCache\Identifier">
+        <plugin name="shellpea_elasticsuite_add_ajax_to_cache" type="Shellpea\AdvancedElasticsuiteCatalog\Plugin\AddAjaxToCache"/>
+    </type>
+</config>

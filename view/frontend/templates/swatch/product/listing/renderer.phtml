@@ -1,0 +1,184 @@
+<?php
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\SwatchRenderer;
+use Magento\Framework\Escaper;
+use Magento\Swatches\Block\Product\Renderer\Listing\Configurable;
+use Magento\Swatches\ViewModel\Product\Renderer\Configurable as ConfigurableViewModel;
+
+/** @var Configurable $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var ConfigurableViewModel $configurableViewModel */
+$configurableViewModel = $viewModels->require(ConfigurableViewModel::class);
+
+$product = $block->getProduct();
+$productId = $product->getId();
+
+$attributes = $block->decorateArray($block->getAllowAttributes());
+
+/** @var SwatchRenderer $swatchRendererViewModel */
+$swatchRendererViewModel = $viewModels->require(SwatchRenderer::class);
+
+$layout = $block->getLayout();
+$swatchItemBlock = $layout->getBlock('product.swatch.item');
+$swatchItemBlock->setData('product_id', $productId);
+?>
+<?php if ($product->isSaleable() && count($attributes)): ?>
+
+    <div x-data='{
+        ...initConfigurableOptions("<?= (int) $productId ?>", <?= $block->getJsonConfig() ?>),
+        ...initSwatchOptions(<?= $block->getJsonSwatchConfig() ?>),
+        mediaCallback: "<?= $escaper->escapeJs($escaper->escapeUrl($block->getMediaCallback())) ?>",
+                    changeOption(optionId, value, skipUpdateGallery) {
+                        this.selectedValues[optionId] = value;
+                        this.findSimpleIndex();
+                        this.findAllowedAttributeOptions();
+                        this.updatePrices();
+                        !skipUpdateGallery && this.updateGallery();
+                    },
+                    updateGallery() {
+                        if (!this.productIndex) {
+                            return;
+                        }
+
+                        fetch(`${this.mediaCallback}?product_id=${this.productIndex}&isAjax=true`, {
+                                method: "GET",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-Requested-With": "XMLHttpRequest"
+                                }
+                            }
+                        ).then(response => {
+                                return response.json()
+                            }
+                        ).then(data => {
+                            if (data.errors) {
+                                // non critical failure only console logged
+                                console.warn(data.errors);
+                            } else {
+                                const image = data && data.medium;
+
+                                image && window.dispatchEvent(
+                                    new CustomEvent(
+                                        "update-gallery-<?= (int)$productId ?>",
+                                        {detail: image}
+                                    )
+                                );
+                            }
+                        }).catch(error => {
+                            console.warn(error)
+                        });
+                    },
+                    preselectQuerystringItems() {
+                        // pre-select option like ?size=167
+                        const urlQueryParams = new URLSearchParams(window.location.search.replace("?", ""));
+                        Object.values(this.optionConfig.attributes).map(attribute => {
+                            const skipUpdateGallery = false;
+                            if (urlQueryParams.get(attribute.code) !== null) {
+                                let optionId = urlQueryParams.get(attribute.code);
+                                let found = false;
+                                Object.values(attribute.options).map(option => {
+                                    if (found === false && option.label === optionId) {
+                                        optionId = option.id;
+                                    }
+                                });
+                                this.changeOption(attribute.id, optionId, skipUpdateGallery);
+                            }
+                        });
+                    },
+                    mouseDown: false,
+                    startX: 0,
+                    maxScroll: 0,
+                    scrollLeft: null,
+                    slider: null,
+                    scrollEvents: {
+                        ["@mousedown"](e) {
+                            this.slider = e.target.closest(".snap");
+                            if (!this.slider) {
+                                return;
+                            }
+                            this.maxScroll = this.slider.scrollWidth - this.slider.offsetWidth;
+                            this.startX = e.pageX - this.slider.offsetLeft;
+                            this.scrollLeft = this.slider.scrollLeft;
+                            this.mouseDown = true;
+                        },
+                        ["@mouseout.self"]() {
+                            this.mouseDown = false;
+                        },
+                        ["@mouseup"]() {
+                            this.mouseDown = false;
+                        },
+                        ["@mousemove"](e) {
+                            e.preventDefault();
+                            if (!this.mouseDown) {
+                                return;
+                            }
+                            const x = e.pageX - this.slider.offsetLeft;
+                            const scroll = x - this.startX;
+                            const scrollLeft = this.scrollLeft - scroll;
+
+                            if (scrollLeft > this.maxScroll) {
+                                this.slider.scrollLeft = this.maxScroll;
+                                return
+                            }
+                            this.slider.scrollLeft = this.scrollLeft - scroll;
+                        },
+                        ["@onselectstart"]() {
+                            return false;
+                        }
+                    },
+                    resizeEvent() {
+                        Array.from(this.$el.querySelectorAll(".snap")).forEach(slider => {
+                            slider.scrollLeft = 0;
+                        })
+                    }
+
+    }'
+         x-init="findAllowedAttributeOptions();"
+         @private-content-loaded.window="onGetCartData($event.detail.data)"
+         @resize.window="resizeEvent()"
+         class="mb-2 relative"
+    >
+        <div>
+            <?php foreach ($attributes as $attribute): ?>
+                <?php $attributeId = $attribute->getAttributeId(); ?>
+                <?php $productAttribute = $attribute->getProductAttribute(); ?>
+
+                <?php if (!$productAttribute->getUsedInProductListing() || !$swatchRendererViewModel->isSwatchAttribute($productAttribute)) {
+                    continue;
+                } ?>
+                <div class="swatch-attribute border-t last:border-b border-container
+            <?= $escaper->escapeHtmlAttr($productAttribute->getAttributeCode()) ?>"
+                >
+                    <div class="w-full overflow-x-hidden swatch-attribute-options">
+                        <div class="flex flex-nowrap w-full overflow-auto transition-all snap items-center py-1 min-h-14"
+                             role="radiogroup"
+                             x-spread="scrollEvents"
+                        >
+                            <label class="sr-only"
+                                   for="attribute<?= $escaper->escapeHtmlAttr($productAttribute->getAttributeCode()) ?>"
+                            >
+                        <span>
+                            <?= $escaper->escapeHtml($productAttribute->getStoreLabel()) ?>
+                        </span>
+                            </label>
+                            <template x-for="(item, index) in optionConfig.attributes[<?= (int) $attributeId ?>].options"
+                                      :key="item.id"
+                            >
+                                <?= /* @noEscape */ $swatchItemBlock->setData('attribute_id', $attributeId)->toHtml(); ?>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php if ($configurableViewModel->getShowSwatchTooltip()): ?>
+            <?= /* @noEscape */ $block->getBlockHtml('product.swatch.tooltip') ?>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>

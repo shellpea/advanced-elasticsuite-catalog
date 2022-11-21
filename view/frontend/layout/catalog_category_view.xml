@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <move element="category.products" destination="category.list.view" />
+
+        <referenceContainer name="content">
+            <container name="category.list.view" htmlTag="div" htmlClass="category-list-view" />
+            <referenceBlock name="category.products" template="Magento_Catalog::category/products.phtml">
+                <referenceBlock class="Magento\Catalog\Block\Product\ListProduct" name="category.products.list" template="Shellpea_AdvancedElasticsuiteCatalog::product/list.phtml">
+                    <block name="category.products.list.options" as="product_options"
+                           template="Magento_Catalog::product/options/options.phtml">
+                    </block>
+                    <block class="Magento\Catalog\Block\Product\ProductList\Toolbar" name="product_list_toolbar" template="Shellpea_AdvancedElasticsuiteCatalog::product/list/toolbar.phtml">
+                        <block class="Magento\Theme\Block\Html\Pager" name="product_list_toolbar_pager" template="Shellpea_AdvancedElasticsuiteCatalog::pager/pager.phtml">
+                        </block>
+                    </block>
+                    <action method="setToolbarBlockName">
+                        <argument name="name" xsi:type="string">product_list_toolbar</argument>
+                    </action>
+                    <container name="category.product.list.additional" as="additional" label="Additional Info" after="product_list_toolbar" />
+                </referenceBlock>
+            </referenceBlock>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,200 @@
+<?php
+
+use Magento\Framework\Escaper;
+use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
+
+/** @var Escaper $escaper */
+/** @var Catalog $block */
+?>
+
+<script>
+    Spruce.store('category', {
+        config: <?= $block->getJsonConfig() ?>,
+        clearUrl:  `${BASE_URL + window.location.pathname.replace('/', '')}`,
+        get current_href() {
+            return window.location.href;
+        },
+        urlParams: new URLSearchParams(decodeURI(window.location.search).replace(/\[(\d*)\]/g, '')),
+        isLoading: false,
+        get sentence() {
+            let sentence;
+            let current = this.config.items.pageSize * this.config.items.curPage > this.config.items.size ?
+                this.config.items.size :
+                this.config.items.pageSize * this.config.items.curPage;
+                if(this.config.items.size/this.config.items.pageSize > 1) {
+                    sentence = `Items %1-%2 of %3`
+                        .replace(/%1/, 1)
+                        .replace(/%2/, current)
+                        .replace(/%3/, this.config.items.size);
+                } else if (this.config.items.size == 1) {
+                    sentence = `%1 Item`.replace(/%1/, this.config.items.size);
+                } else {
+                    sentence = `%1 Items`.replace(/%1/, this.config.items.size);
+                }
+
+
+            return sentence;
+        },
+        get isHidden() {
+            return this.config.infinite.active && this.config.items.curPage * this.config.items.pageSize >= this.config.items.size
+        },
+        get currentUrl () {
+            return this.buildUrl(this.current_href, 'p', parseInt(this.config.items.curPage) + 1);
+        },
+        getMultipleFilterValues: function () {
+            let filterList = [];
+            document.querySelectorAll('.filter-content .filter-option').forEach(filterItem => {
+                filterList.push(filterItem.dataset.filterName)
+            })
+            return filterList;
+        },
+        loadActualFilters(response) {
+            let currentFiltersList = this.getMultipleFilterValues();
+            let responseFilters = new DOMParser().parseFromString(response.listFilterOptions, 'text/html');
+            let responseFiltersContent = responseFilters.querySelectorAll('.filter-content  .filter-option')
+            responseFilters.querySelectorAll('.filter-content  .filter-option').forEach(filterItem => {
+                console.log(filterItem.dataset.filterName)
+            })
+            if(currentFiltersList.length < responseFiltersContent.length) {
+                let filtredListContent = Array.from(responseFiltersContent).filter(function(item) {
+                    return currentFiltersList.lastIndexOf(item.dataset.filterName) == -1
+                })
+
+                filtredListContent.forEach(item => {
+                    document.querySelector('.filter-content').append(item);
+                })
+            }
+        },
+        reload() {
+            this.urlParams = new URLSearchParams(
+                decodeURI(window.location.search).replace(/\[(\d*)\]/g, ''),
+            )
+        },
+        buildUrl (url, replaceParam, replaceValue) {
+            if (replaceParam) {
+                let href = new URL(url)
+                href.searchParams.set(replaceParam, replaceValue)
+                return href.toString()
+            } else {
+                return url
+            }
+        },
+        updateLayer (url, replaceParam, replaceValue) {
+            this.isLoading = true;
+            try {
+                let updatedUrl = this.buildUrl(url, replaceParam, replaceValue);
+
+                updatedUrl = new URL(updatedUrl);
+                updatedUrl.searchParams.append('_', Date.now())
+                updatedUrl = updatedUrl.toString();
+
+                fetch(updatedUrl, {
+                    'headers': {
+                        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    'method': 'GET',
+                    'mode': 'same-origin',
+                    'credentials': 'include'
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                }).then(result => {
+                    this.afterUpdateLayer(result, updatedUrl)
+                });
+            } catch (error) {
+                this.isLoading = false;
+                console.error(error)
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        afterUpdateLayer (response, updatedUrl) {
+            try {
+                updatedUrl = new URL(updatedUrl);
+                updatedUrl.searchParams.delete('_');
+                updatedUrl = updatedUrl.toString();
+                history.pushState({}, document.title, updatedUrl);
+                this.reload();
+                this.config.items.filterItems = response.filterItems;
+                this.config.items.activeFilter = response.activeFilter;
+                this.config.items.size = response.size;
+                this.config.items.pageSize = response.pageSize;
+                this.config.items.curPage = response.curPage;
+                this.loadActualFilters(response);
+                let responseActiveFilter = new DOMParser().parseFromString(response.activeFilter, 'text/html');
+                responseActiveFilter = responseActiveFilter.querySelector('.filter-current');
+                let activeFilter = document.querySelector('.filter-current');
+                activeFilter.replaceWith(responseActiveFilter);
+
+                let responseProductList = new DOMParser().parseFromString(response.productList, 'text/html');
+                responseProductsList = responseProductList.querySelector('.products.wrapper');
+                let productList = document.querySelector('.products.wrapper');
+                productList.replaceWith(responseProductsList);
+                this.isLoading = false;
+            } catch (error) {
+                this.isLoading = false;
+                console.error(error)
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        loadPage (url) {
+            this.isLoading = true;
+            try {
+                url = new URL(url);
+                url.searchParams.append('_', Date.now())
+                url = url.toString();
+                fetch(url, {
+                    'headers': {
+                        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    'method': 'GET',
+                    'mode': 'same-origin',
+                    'credentials': 'include'
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        this.afterPageLoad (result, url);
+                    });
+            } catch (error) {
+                this.isLoading = false;
+                console.error(error)
+            } finally {
+                this.isLoading = false;
+            }
+
+        },
+        afterPageLoad (response, url) {
+            try {
+                url = new URL(url);
+                url.searchParams.delete('_');
+                url = url.toString();
+                history.pushState({}, document.title, url);
+                this.reload();
+                this.config.items.filterItems = response.filterItems;
+                this.config.items.activeFilter = response.activeFilter;
+                this.config.items.size = response.size
+                this.config.items.pageSize = response.pageSize
+                this.config.items.curPage = response.curPage
+
+                let responseProductList = new DOMParser().parseFromString(response.productList, 'text/html');
+                responseProductsList = responseProductList.querySelector('.products.wrapper').children;
+
+                let productList = document.querySelector('.products.wrapper');
+                productList.append(...responseProductsList)
+                this.isLoading = false;
+            } catch (error) {
+                this.isLoading = false;
+                console.error(error)
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+    })
+
+
+</script>

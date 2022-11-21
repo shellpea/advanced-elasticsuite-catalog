@@ -1,0 +1,195 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\ViewModel\ProductCompare;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Hyva\Theme\ViewModel\Wishlist;
+use Magento\Catalog\Block\Product\AbstractProduct;
+use Magento\Catalog\Helper\Output as CatalogOutputHelper;
+use Magento\Framework\Escaper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var AbstractProduct $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var ProductPage $productViewModel */
+$productViewModel = $viewModels->require(ProductPage::class);
+
+/** @var ProductListItem $productListItemViewModel */
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+
+/** @var CatalogOutputHelper $catalogOutputHelper */
+$catalogOutputHelper = $this->helper(CatalogOutputHelper::class);
+
+/** @var ProductCompare $compareViewModel */
+$compareViewModel = $viewModels->require(ProductCompare::class);
+/** @var Wishlist $wishlistViewModel */
+$wishlistViewModel = $viewModels->require(Wishlist::class);
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+/** @var Magento\Catalog\Model\Product $product */
+$product = $block->getData('product');
+$imageDisplayArea = $block->getData('image_display_area');
+$templateType = $block->getData('template_type');
+$viewMode = $block->getData('view_mode');
+$showDescription = $block->getData('show_description');
+$showAddToWishlist = $wishlistViewModel->isEnabled();
+$showAddToCompare = $compareViewModel->showInProductList();
+$viewIsGrid = $viewMode === 'grid';
+
+if (!$product) {
+    return '';
+}
+$productId = $product->getId();
+$uniqueId = '_' . uniqid();
+
+$hideDetails       = $block->getData('hide_details') ?: false;
+$hideRatingSummary = $block->getData('hide_rating_summary') ?: false;
+?>
+
+<?php if ($product->isSaleable()): ?>
+<form method="post"
+    action="<?= $escaper->escapeUrl($productViewModel->getAddToCartUrl($product, ['useUencPlaceholder' => true])) ?>"
+    class="item product product-item product_addtocart_form card card-interactive flex flex-col w-full <?= $viewIsGrid ? '' : 'md:flex-row' ?>"
+    <?php if ($product->getOptions()): ?>
+    enctype="multipart/form-data"
+    <?php endif; ?>
+>
+    <?= /** @noEscape */ $block->getBlockHtml('formkey') ?>
+    <input type="hidden" name="product" value="<?= (int)$productId ?>"/>
+<?php else: ?>
+<div class="item product product-item card card-interactive flex flex-col w-full <?= $viewIsGrid ? '' : 'md:flex-row' ?>">
+<?php endif; ?>
+    <?php // Product Image ?>
+    <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"
+        class="product photo product-item-photo block mx-auto mb-3 <?= $viewIsGrid ? '' : 'md:w-2/6 md:mb-0 md:mr-5' ?>"
+        tabindex="-1"
+    >
+        <?= $block->getImage($product, $imageDisplayArea)
+            ->setTemplate('Magento_Catalog::product/list/image.phtml')
+            ->setProductId($productId)
+            ->toHtml(); ?>
+    </a>
+    <div class="product-info flex flex-col flex-grow">
+        <?php $productNameStripped = $block->stripTags($product->getName(), null, true); ?>
+        <div class="mt-2 mb-1 items-center justify-center text-primary font-semibold text-lg text-center <?= $viewIsGrid ? '' : 'md:text-left' ?>">
+            <a class="product-item-link"
+               href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>">
+                <?= /* @noEscape */ $catalogOutputHelper->productAttribute($product, $product->getName(), 'name') ?>
+            </a>
+        </div>
+
+        <?php if (!$hideRatingSummary): ?>
+        <div class="py-1 mx-auto <?= $viewIsGrid ? '' : 'md:mx-0 md:w-auto' ?>">
+            <?= $block->getReviewsSummaryHtml($product, 'short') ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($product->isAvailable() && !$hideDetails): ?>
+            <?= $block->getProductDetailsHtml($product) ?>
+        <?php endif; ?>
+
+        <?php if ($showDescription): ?>
+        <div class="mt-2 mb-1 items-center justify-center text-primary text-center <?= $viewIsGrid ? '' : 'md:text-left' ?>">
+            <?= /* @noEscape */ $productViewModel->getShortDescriptionForProduct($product) ?>
+        </div>
+        <?php endif; ?>
+
+        <script>
+            function initPriceBox_<?= /** @noEscape */ $uniqueId ?>()
+            {
+                return {
+                    updatePrice(priceData) {
+                        const regularPriceLabel = this.$el.querySelector('.normal-price .price-label');
+                        const regularPriceElement = this.$el.querySelector('.normal-price .price-wrapper .price');
+                        if (priceData.finalPrice.amount < priceData.oldPrice.amount) {
+                            regularPriceLabel.classList.add('hidden');
+                        } else {
+                            regularPriceLabel.classList.remove('hidden');
+                        }
+                        regularPriceElement.innerText = hyva.formatPrice(priceData.finalPrice.amount);
+                    }
+                }
+            }
+        </script>
+        <div class="pt-1 text-gray-900"
+             x-data="{
+                    updatePrice(priceData) {
+                        const regularPriceLabel = this.$el.querySelector('.normal-price .price-label');
+                        const regularPriceElement = this.$el.querySelector('.normal-price .price-wrapper .price');
+                        if (priceData.finalPrice.amount < priceData.oldPrice.amount) {
+                            regularPriceLabel.classList.add('hidden');
+                        } else {
+                            regularPriceLabel.classList.remove('hidden');
+                        }
+                        regularPriceElement.innerText = hyva.formatPrice(priceData.finalPrice.amount);
+                    }
+                }"
+             @update-prices-<?= (int)$productId ?>.window="updatePrice($event.detail);"
+        >
+            <?= /* @noEscape */ $productListItemViewModel->getProductPriceHtml($product) ?>
+        </div>
+
+        <div class="mt-auto pt-3 flex flex-wrap justify-center items-center">
+            <?php if ($product->isSaleable()): ?>
+            <button @click.prevent="addItemToCart($event.target)" class="w-auto btn btn-primary justify-center text-sm
+                        <?= $viewIsGrid ? 'mr-auto' : 'mr-auto md:mr-0' ?>"
+                    aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Cart')) ?>"
+            >
+                <?= $heroicons->shoppingCartHtml("h-6 w-6 border-current inline pointer-events-none", 25, 25) ?>
+                <span class="ml-2 inline pointer-events-none <?= $viewIsGrid ? 'md:ml-0 md:hidden lg:ml-2 lg:inline' : '' ?>">
+                    <?= $escaper->escapeHtml(__('Add to Cart')) ?>
+                </span>
+            </button>
+            <?php else: ?>
+            <div class="w-auto justify-center <?= $viewIsGrid ? 'mr-auto' : 'mr-auto md:mr-0' ?>">
+                <?= $block->getChildBlock('stockstatus')->setData('product', $product)->toHtml() ?>
+            </div>
+            <?php endif; ?>
+            <?php if ($showAddToWishlist): ?>
+            <button x-data="initWishlist()"
+                    @click.prevent="addToWishlist(<?= (int)$productId ?>)"
+                    aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Wish List')) ?>"
+                    type="button"
+                    class="rounded-full w-9 h-9 bg-gray-200 p-0 border-0 inline-flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-red-600 ml-2">
+                <?= $heroiconsSolid->heartHtml("w-5 h-5", 25, 25) ?>
+            </button>
+            <?php endif; ?>
+            <?php if ($showAddToCompare): ?>
+            <button x-data="initCompareOnProductList()"
+                    @click.prevent="addToCompare(<?= (int)$productId ?>)"
+                    aria-label="<?= $escaper->escapeHtmlAttr(__('Add to Compare')) ?>"
+                    type="button"
+                    class="rounded-full w-9 h-9 bg-gray-200 p-0 border-0 inline-flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-yellow-500 ml-2">
+                <?= $heroicons->scaleHtml("w-5 h-5", 25, 25) ?>
+            </button>
+            <?php endif; ?>
+            <?php if ($addToBlock = $block->getChildBlock('addto')): ?>
+                <?= $addToBlock->setProduct($product)->getChildHtml() ?>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php if ($product->isSaleable()): ?>
+</form>
+<?php else: ?>
+</div>
+<?php endif; ?>

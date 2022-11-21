@@ -1,0 +1,90 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\LayeredNavigation\Block\Navigation;
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var $block Navigation */
+/** @var $escaper Escaper */
+?>
+<?php if ($block->canShowBlock()) : ?>
+    <div class="block border border-container bg-container-darker p-4 md:border-0 md:bg-transparent md:py-0 md:px-0 my-6"
+         x-data="initLayeredNavigation()"
+         x-init="checkIsMobileResolution()"
+         @resize.window.debounce="checkIsMobileResolution()"
+         @visibilitychange.window.debounce="checkIsMobileResolution()"
+    >
+        <div class="block-title h-10 flex items-center justify-between" @click="blockOpen = !blockOpen">
+            <span class="text-primary text-md md:text-3xl font-medium uppercase"><?= $escaper->escapeHtml(__('Shop By')) ?></span>
+            <span class="py-1 px-1 bg-container-lighter rounded border border-container-darker hidden"
+                  :class="{ 'block' : isMobile, 'hidden': !isMobile }">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg"
+                     class="transition-transform transform duration-300 ease-in-out"
+                     :class="blockOpen ? 'rotate-180' : ''">
+                    <path d="M19 9L12 16L5 9" stroke="#4A5568" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+        <div class="block-content filter-content pt-3" x-show="isMobile && blockOpen || !isMobile">
+            <?php $filterIndex = 0; ?>
+            <?php $activeFilters = json_decode($block->getActiveFilters()) ?>
+            <?= $block->getChildHtml('state') ?>
+            <?php foreach ($block->getFilters() as $filter): ?>
+                <?php if ($filter->getItemsCount()): ?>
+                    <?php $showOpen = in_array($filterIndex, $activeFilters) ?>
+                    <div class="filter-option card my-4"
+                        data-filter-name="<?= $escaper->escapeHtmlAttr(__($filter->getName())) ?>"
+                        :class="{'hidden': !$store.category.config.items.filterItems.<?= $filter->getRequestVar() . 'Filter' ?>.length }"
+                        x-data="{ open: <?= $showOpen ? 'true' : 'false' ?> }">
+                        <div
+                            class="filter-options-title flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container"
+                            :class="{ 'border-b pb-4': open }"
+                            @click="open = !open">
+                            <span class="title text-md md:text-lg font-semibold">
+                                <?= $escaper->escapeHtml(__($filter->getName())) ?>
+                                </span>
+                            <span class="py-1 px-1 rounded border border-container">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     class="transition-transform transform duration-300 ease-in-out"
+                                     :class="open ? 'rotate-180' : ''">
+                                    <path d="M19 9L12 16L5 9" stroke="#4A5568" stroke-width="2" stroke-linecap="round"
+                                          stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="filter-options-content pt-3 hidden"
+                             :class="{ 'hidden': !open , 'block': 'open' }"
+                        >
+                            <?= /* @noEscape */
+                            $block->getChildBlock('renderer')->render($filter) ?>
+                        </div>
+                    </div>
+                    <?php $filterIndex++ ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <script>
+        function initLayeredNavigation() {
+            return {
+                isMobile: false,
+                blockOpen: false,
+                checkIsMobileResolution: function () {
+                    this.isMobile = window.outerWidth < 768
+                }
+            }
+        }
+    </script>
+<?php endif; ?>

@@ -1,0 +1,32 @@
+<?php
+
+/** @var FilterRenderer $block */
+/** @var Escaper $escaper */
+/** @var array $filterItems */
+/** @var Data $catalogHelper */
+
+use Magento\Catalog\Helper\Data;
+use Magento\Framework\Escaper;
+use Smile\ElasticsuiteCatalog\Block\Navigation\FilterRenderer;
+
+$catalogHelper = $this->helper('\Magento\Catalog\Helper\Data');
+$datascope = $block->getFilter()->getRequestVar() . 'Filter';
+?>
+
+<ol class="items">
+    <template x-for="filterItem in $store.category.config.items.filterItems.<?= $datascope ?>" hidden>
+        <li class="item my-1">
+        <a :href="filterItem.url + '?' + new URLSearchParams(window.location.search).toString()" class="flex justify-between mt-1.5 py-1 pr-1 hover:bg-gray-200 hover:text-black">
+            <div class="flex items-center px-1.5 pointer-events-none">
+            <?php if ($this->isMultipleSelectEnabled()) : ?>
+                <input class="pointer-events-none mr-1" type="checkbox" :checked="filterItem.is_selected"/>
+            <?php endif; ?>
+                <span class="pointer-events-none" x-text="filterItem.label" ></span>
+            </div>
+            <?php if ($catalogHelper->shouldDisplayProductCountOnLayer()): ?>
+                <span class="pointer-events-none count text-primary ml-1" x-text="'(' + filterItem.count + ')'"></span>
+            <?php endif; ?>
+        </a>
+        </li>
+    </template>
+</ol>

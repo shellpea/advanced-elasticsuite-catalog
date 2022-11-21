@@ -1,0 +1,137 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\CurrentCategory;
+use Hyva\Theme\ViewModel\ProductListItem;
+use Hyva\Theme\ViewModel\ProductPage;
+use Shellpea\AdvancedElasticsuiteCatalog\Block\ListProduct;
+use Magento\Framework\Escaper;
+
+/** @var ListProduct $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var ProductPage $productViewModel */
+/** @var CurrentCategory $currentCategoryViewModel */
+
+$productViewModel         = $viewModels->require(ProductPage::class);
+$productListItemViewModel = $viewModels->require(ProductListItem::class);
+$currentCategoryViewModel = $viewModels->require(CurrentCategory::class);
+
+$hideRatingSummary = (bool) $block->getData('hide_rating_summary');
+$hideDetails       = (bool) $block->getData('hideDetails');
+
+$productCollection = $block->getLoadedProductCollection();
+$actionName = $block->getRequest()->getFullActionName();
+if ($actionName == 'catalogsearch_result_index') {
+    $productCollection = $block->getSearchCollection();
+}
+
+?>
+<?php get_class($block->getSearchCollection()) ?>
+<?php if (!$productCollection->count()): ?>
+    <div class="message info empty">
+        <div>
+            <?= $escaper->escapeHtml(__('We can\'t find products matching the selection.')) ?>
+        </div>
+    </div>
+<?php else: ?>
+    <section class="py-8">
+        <?= $block->getToolbarHtml() ?>
+        <?= $block->getAdditionalHtml() ?>
+        <?php
+        if ($block->getMode() == 'grid') {
+            $viewMode         = 'grid';
+            $imageDisplayArea = 'category_page_grid';
+            $showDescription  = false;
+            $templateType     = \Magento\Catalog\Block\Product\ReviewRendererInterface::SHORT_VIEW;
+        } else {
+            $viewMode         = 'list';
+            $imageDisplayArea = 'category_page_list';
+            $showDescription  = true;
+            $templateType     = \Magento\Catalog\Block\Product\ReviewRendererInterface::FULL_VIEW;
+        }
+        /**
+         * Position for actions regarding image size changing in vde if needed
+         */
+        $pos = $block->getPositioned();
+        ?>
+        <div class="products wrapper mode-<?= /* @noEscape */$viewMode ?> products-<?= /* @noEscape */$viewMode ?>">
+            <div x-data="initProductCard()" class="mx-auto pt-4 pb-12 grid gap-4 grid-cols-1 <?= /* @noEscape */$viewMode === 'grid'
+                ? 'sm:grid-cols-2 xl:grid-cols-3'
+                : '' ?>">
+                <?php if ($actionName == 'catalog_category_view' && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
+                    <?php foreach ($block->getProductsFromPrevPages() as $product): ?>
+                    <?= $productListItemViewModel->getItemHtml(
+                        $product,
+                        $block,
+                        $viewMode,
+                        $templateType,
+                        $imageDisplayArea,
+                        $showDescription
+                    ) ?>
+                <?php endforeach; ?>
+                <?php elseif ($actionName == 'catalogsearch_result_index' && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
+                    <?php foreach ($block->getProductsFromPrevPagesSearch() as $product): ?>
+                    <?= $productListItemViewModel->getItemHtml(
+                        $product,
+                        $block,
+                        $viewMode,
+                        $templateType,
+                        $imageDisplayArea,
+                        $showDescription
+                    ) ?>
+                    <?php endforeach; ?>
+                <?php endif ?>
+                <?php /** @var \Magento\Catalog\Model\Product $product */ ?>
+                <?php foreach ($productCollection as $product): ?>
+                    <?= $productListItemViewModel->getItemHtml(
+                        $product,
+                        $block,
+                        $viewMode,
+                        $templateType,
+                        $imageDisplayArea,
+                        $showDescription
+                    ) ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?= $block->getChildBlock('toolbar')->setIsBottom(true)->toHtml() ?>
+    </section>
+    <script>
+    function initProductCard() {
+        return {
+            addItemToCart(button) {
+                let body = new URLSearchParams(new FormData(button.form))
+
+                fetch(button.form.action, {
+                    "headers": {
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    "body": body,
+                    "method": "POST",
+                }).then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else if (response.ok) {
+                        return response.json();
+                    } else {
+                        window.dispatchMessages && window.dispatchMessages([{
+                        type: 'warning',
+                        text: '<?= $escaper->escapeJs(__('Could not add item to cart.')) ?>'
+                    }]);
+                    }
+                }).then(result => {
+                    window.dispatchEvent(new CustomEvent('reload-customer-section-data'));
+                });
+            }
+        }
+    }
+    </script>
+<?php endif; ?>

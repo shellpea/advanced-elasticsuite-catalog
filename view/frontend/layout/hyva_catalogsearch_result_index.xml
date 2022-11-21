@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <attribute name="class" value="page-with-filter"/>
+        <referenceBlock name="category.product.type.details.renderers">
+            <block class="Magento\Swatches\Block\Product\Renderer\Listing\Configurable"
+                   name="category.product.type.details.renderers.configurable" as="configurable"
+                   template="Shellpea_AdvancedElasticsuiteCatalog::swatch/product/listing/renderer.phtml"
+                   ifconfig="catalog/frontend/show_swatches_in_product_list"
+            />
+        </referenceBlock>
+        <referenceContainer name="content">
+            <referenceBlock class="Magento\Catalog\Block\Product\ProductList\Toolbar" name="product_list_toolbar" template="Shellpea_AdvancedElasticsuiteCatalog::product/list/toolbar.phtml">
+                <referenceBlock class="Magento\Theme\Block\Html\Pager" name="product_list_toolbar_pager" template="Shellpea_AdvancedElasticsuiteCatalog::pager/pager.phtml">
+                </referenceBlock>
+            </referenceBlock>
+            <container name="category.list.view" htmlTag="div" htmlClass="category-list-view" />
+            <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog" name="shellpea.elastic.navigation"
+                   template="Shellpea_AdvancedElasticsuiteCatalog::configuration.phtml" ifconfig="smile_advanced_elasticsuite_catalog/general/active" />
+        </referenceContainer>
+
+        <referenceContainer name="sidebar.main">
+            <referenceBlock name="catalogsearch.leftnav"
+                   template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/view.phtml">
+                <referenceBlock name="catalogsearch.navigation.state" />
+                <referenceBlock name="catalogsearch.navigation.renderer">
+
+                    <referenceBlock name="catalogsearch.navigation.renderer.attribute"
+                        template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/attribute.phtml">
+                        <referenceBlock name="attribute-filter-js" remove="true"/>
+                    </referenceBlock>
+
+                    <referenceBlock class="Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Category"
+                           name="catalogsearch.navigation.renderer.category"
+                           template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/default.phtml"/>
+
+                    <referenceBlock name="catalogsearch.navigation.renderer.slider"
+                           template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/slider.phtml">
+                        <referenceBlock class="Magento\Framework\View\Element\Template"
+                               name="renderer.slider"
+                               template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/js/slider-filter-js.phtml"/>
+                    </referenceBlock>
+
+                    <referenceBlock name="catalogsearch.navigation.renderer.price.slider"
+                           template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/slider.phtml">
+                        <referenceBlock class="Magento\Framework\View\Element\Template"
+                               name="renderer.price.slider"
+                               template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/js/slider-filter-js.phtml">
+                        </referenceBlock>
+                    </referenceBlock>
+                    <referenceBlock class="Hyva\SmileElasticsuite\Block\SmileElasticsuiteSwatches\Navigation\Renderer\Swatches"
+                           name="catalog.navigation.renderer.swatches" />
+                </referenceBlock>
+            </referenceBlock>
+        </referenceContainer>
+
+        <referenceContainer name="content">
+            <block class="Smile\ElasticsuiteCatalog\Block\CatalogSearch\Result\Cache"
+                   name="smile.elasticsuite.catalogsearch.result.cache"
+                   as="smile.elasticsuite.catalogsearch.result.cache"
+            />
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,121 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Magento\Swatches\Block\LayeredNavigation\RenderLayered;
+use Magento\Swatches\ViewModel\Product\Renderer\Configurable as ConfigurableViewModel;
+
+/** @var RenderLayered $block */
+/** @var SecureHtmlRenderer $secureRenderer */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var ConfigurableViewModel $configurableViewModel */
+$configurableViewModel = $viewModels->require(ConfigurableViewModel::class);
+
+$swatchData = $block->getSwatchData();
+
+?>
+<script>
+    function initLayeredSwatch_<?= $escaper->escapeJs($swatchData['attribute_code']) ?>() {
+        return {
+            getSwatchType(typeNumber) {
+                switch (typeNumber) {
+                    case "1":
+                        return "color"
+                    case "2":
+                        return "image"
+                    case "0":
+                    default:
+                        return "text"
+                }
+            },
+            getSwatchBackgroundStyle(type, value, image) {
+                if (this.getSwatchType(type) === "color") {
+                    return 'background-color:' + value;
+                } else if (this.getSwatchType(type) === "image") {
+                    return "background: #ffffff url('" + image + "') no-repeat center";
+                } else {
+                    return '';
+                }
+            },
+            activeTooltipItem: false,
+            tooltipPositionElement: false,
+            isTooltipVisible() {
+                return this.activeTooltipItem
+            },
+            getTooltipImageStyle() {
+                const type = this.activeTooltipItem.type;
+
+                if (this.getSwatchType(type) === "color") {
+                    return 'background-color:' + this.activeTooltipItem.value + '; width: 110px; height: 90px;';
+                } else if (this.getSwatchType(type) === "image") {
+                    return "background: #ffffff url('" + this.activeTooltipItem.thumb +
+                        "') center center no-repeat; width: 110px; height: 90px;";
+                } else {
+                    return 'display:none';
+                }
+            },
+            getTooltipPosition() {
+                return this.tooltipPositionElement ?
+                    (
+                        `top: ${this.tooltipPositionElement.offsetTop}px;` +
+                        `left: ${this.tooltipPositionElement.offsetLeft}px;`
+                    ) : ''
+            },
+            getTooltipLabel() {
+                return this.activeTooltipItem.label || ''
+            },
+            isVisualSwatch() {
+                return this.getSwatchType(this.activeTooltipItem.type) !== 'text'
+            }
+        }
+    }
+</script>
+<div class="swatch-attribute swatch-layered <?= $escaper->escapeHtmlAttr($swatchData['attribute_code']) ?>"
+    x-data="initLayeredSwatch_<?= $escaper->escapeJs($swatchData['attribute_code']) ?>()"
+>
+    <div class="swatch-attribute-options clearfix">
+    <template x-for="swatchItem in $store.category.config.items.filterItems.<?= $swatchData['attribute_code'] . 'Filter' ?>">
+        <a :href="swatchItem.url" rel="nofollow"
+        :aria-label="swatchItem.label"
+        class="swatch-option-link-layered swatch-option border-2 cursor-pointer bg-container-lighter shadow-sm relative select-none border-container-darker w-6 h-6"
+        @click.prevent="$store.category.updateLayer($event.target.href)"
+        x-text="swatchItem.swatch[swatchItem.option_id]['type'] !== '0' ? '' : swatchItem.label"
+        :class="{
+            'w-6 h-6' : getSwatchType(swatchItem.swatch[swatchItem.option_id]['type']) !== 'text',
+            ' border-container-lighter ring ring-primary ring-opacity-50': swatchItem.is_selected,
+            'disabled': swatchItem.option.custom_style == 'disabled'}"
+        :style="getSwatchBackgroundStyle(
+                    swatchItem.swatch[swatchItem.option_id]['type'],
+                    swatchItem.swatch[swatchItem.option_id]['value'],
+                    swatchItem.swatch_image
+                )"
+        <?php if ($configurableViewModel->getShowSwatchTooltip()): ?>
+        @mouseenter.self="activeTooltipItem = {
+            attribute: swatchItem.swatch[swatchItem.option_id]['value'],
+            type: swatchItem.swatch[swatchItem.option_id]['type'],
+            id: swatchItem.option_id,
+            label: swatchItem.label,
+            thumb: swatchItem.swatch_thumb,
+            value: swatchItem.swatch[swatchItem.option_id]['value']
+        }; tooltipPositionElement = $event.target;"
+        @mouseleave.self="activeTooltipItem = false"
+        <?php endif; ?>
+        >
+        </a>
+    </template>
+    </div>
+    <?php if ($configurableViewModel->getShowSwatchTooltip()): ?>
+        <?= /* @noEscape */ $block->getBlockHtml('product.swatch.tooltip'); ?>
+    <?php endif; ?>
+</div>

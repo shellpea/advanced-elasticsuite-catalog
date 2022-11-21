@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <smile_advanced_elasticsuite_catalog>
+            <general>
+                <active>1</active>
+            </general>
+            <infinite_scroll>
+                <active>1</active>
+                <button_label>Show More Products</button_label>
+            </infinite_scroll>
+        </smile_advanced_elasticsuite_catalog>
+    </default>
+</config>
