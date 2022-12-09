@@ -31,8 +31,6 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
                 } else {
                     sentence = `%1 Items`.replace(/%1/, this.config.items.size);
                 }
-
-
             return sentence;
         },
         get isHidden() {
@@ -122,6 +120,7 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
                 this.config.items.size = response.size;
                 this.config.items.pageSize = response.pageSize;
                 this.config.items.curPage = response.curPage;
+                this.config.items.lastPage = response.lastPage;
                 this.loadActualFilters(response);
                 let responseActiveFilter = new DOMParser().parseFromString(response.activeFilter, 'text/html');
                 responseActiveFilter = responseActiveFilter.querySelector('.filter-current');

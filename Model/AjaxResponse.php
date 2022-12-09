@@ -108,6 +108,7 @@ class AjaxResponse
             'pageSize'          => $productCollection->getPageSize(),
             'size'              => $productCollection->getSize(),
             'curPage'           => $productCollection->getCurPage(),
+            'lastPage'          => $productCollection->getLastPageNumber()
         ]);
 
         return $resultJson;

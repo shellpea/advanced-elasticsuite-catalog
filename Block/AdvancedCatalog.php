@@ -314,6 +314,7 @@ class AdvancedCatalog extends Template
             'pageSize'      => $this->getPageSize(),
             'size'          => $this->getSize(),
             'curPage'       => $this->getCurPage(),
+            'lastPage'      => $this->getLastPage()
         ];
         $jsonConfig['slider']   = [
             'directMode' => $this->config->isValue(Config::SLIDER_DIRECT_MODE_ACTIVE),
@@ -353,5 +354,10 @@ class AdvancedCatalog extends Template
     protected function getCurPage(): int
     {
         return (int)$this->getProductList()->getCurPage();
+    }
+
+    private function getLastPage() :int
+    {
+        return (int)$this->getProductList()->getLastPageNumber();
     }
 }

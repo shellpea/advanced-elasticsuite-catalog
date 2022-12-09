@@ -10,8 +10,8 @@ use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\CurrentCategory;
 use Hyva\Theme\ViewModel\ProductListItem;
 use Hyva\Theme\ViewModel\ProductPage;
-use Shellpea\AdvancedElasticsuiteCatalog\Block\ListProduct;
 use Magento\Framework\Escaper;
+use Shellpea\AdvancedElasticsuiteCatalog\Block\ListProduct;
 
 /** @var ListProduct $block */
 /** @var Escaper $escaper */
@@ -43,6 +43,8 @@ if ($actionName == 'catalogsearch_result_index') {
 <?php else: ?>
     <section class="py-8">
         <?= $block->getToolbarHtml() ?>
+        <?php echo $block->getChildHtml('catalog.leftnav'); ?>
+        <?php echo $block->getChildHtml('catalogsearch.leftnav'); ?>
         <?= $block->getAdditionalHtml() ?>
         <?php
         if ($block->getMode() == 'grid') {
@@ -68,13 +70,13 @@ if ($actionName == 'catalogsearch_result_index') {
                 <?php if ($actionName == 'catalog_category_view' && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
                     <?php foreach ($block->getProductsFromPrevPages() as $product): ?>
                     <?= $productListItemViewModel->getItemHtml(
-                        $product,
-                        $block,
-                        $viewMode,
-                        $templateType,
-                        $imageDisplayArea,
-                        $showDescription
-                    ) ?>
+                    $product,
+                    $block,
+                    $viewMode,
+                    $templateType,
+                    $imageDisplayArea,
+                    $showDescription
+                ) ?>
                 <?php endforeach; ?>
                 <?php elseif ($actionName == 'catalogsearch_result_index' && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
                     <?php foreach ($block->getProductsFromPrevPagesSearch() as $product): ?>
