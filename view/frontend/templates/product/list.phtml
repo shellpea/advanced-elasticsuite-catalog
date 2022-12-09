@@ -43,8 +43,6 @@ if ($actionName == 'catalogsearch_result_index') {
 <?php else: ?>
     <section class="py-8">
         <?= $block->getToolbarHtml() ?>
-        <?php echo $block->getChildHtml('catalog.leftnav'); ?>
-        <?php echo $block->getChildHtml('catalogsearch.leftnav'); ?>
         <?= $block->getAdditionalHtml() ?>
         <?php
         if ($block->getMode() == 'grid') {
