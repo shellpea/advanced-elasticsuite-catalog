@@ -9,9 +9,9 @@
 use Hyva\Theme\Model\LocaleFormatter;
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\StoreConfig;
 use Magento\Framework\Escaper;
 use Magento\Theme\Block\Html\Pager;
-use Hyva\Theme\ViewModel\StoreConfig;
 
 /** @var Pager $block */
 /** @var Escaper $escaper */
@@ -43,7 +43,7 @@ $pagerItemBtnClass = $pagerItemClass
         <div class="grid items-center grid-flow-row grid-cols-4 gap-2 pager
             sm:grid-cols-8 md:grid-cols-4 lg:grid-cols-8">
     <?php endif ?>
-    <?php if($isEnableInfinite == false): ?>
+    <?php if ($isEnableInfinite == false): ?>
     <?php if ($block->getShowAmounts() && $isEnableInfinite == false): ?>
         <p class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
                 toolbar-amount1 sm:order-2 md:order-3 lg:order-2 gap-x-1">
@@ -66,7 +66,7 @@ $pagerItemBtnClass = $pagerItemClass
         </p>
     <?php endif; ?>
     <?php endif; ?>
-    <?php if($isEnableInfinite): ?>
+    <?php if ($isEnableInfinite): ?>
         <span class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
             toolbar-amount sm:order-2 md:order-3 lg:order-2 gap-x-1" x-text="$store.category.sentence"></span>
         <div x-data class="flex flex-col items-center justify-center order-2 col-span-4" >
