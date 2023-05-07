@@ -11,9 +11,6 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <attribute name="class" value="page-with-filter"/>
-        <referenceContainer name="columns">
-            <block name="spruce.script" template="Shellpea_AdvancedElasticsuiteCatalog::page/js/spruce.phtml" before="-"></block>
-        </referenceContainer>
         <referenceBlock name="content" >
             <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog" name="shellpea.elastic.navigation"
                    template="Shellpea_AdvancedElasticsuiteCatalog::configuration.phtml" ifconfig="smile_advanced_elasticsuite_catalog/general/active" />

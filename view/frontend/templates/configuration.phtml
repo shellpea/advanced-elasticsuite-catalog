@@ -8,7 +8,8 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
 ?>
 
 <script>
-    Spruce.store('category', {
+    document.addEventListener('alpine:init', () => {
+    Alpine.store('category', {
         config: <?= $block->getJsonConfig() ?>,
         clearUrl:  `${BASE_URL + window.location.pathname.replace('/', '')}`,
         get current_href() {
@@ -16,6 +17,7 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
         },
         urlParams: new URLSearchParams(decodeURI(window.location.search).replace(/\[(\d*)\]/g, '')),
         isLoading: false,
+        hasMoreItems: {},
         get sentence() {
             let sentence;
             let current = this.config.items.pageSize * this.config.items.curPage > this.config.items.size ?
@@ -50,9 +52,7 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
             let currentFiltersList = this.getMultipleFilterValues();
             let responseFilters = new DOMParser().parseFromString(response.listFilterOptions, 'text/html');
             let responseFiltersContent = responseFilters.querySelectorAll('.filter-content  .filter-option')
-            responseFilters.querySelectorAll('.filter-content  .filter-option').forEach(filterItem => {
-                console.log(filterItem.dataset.filterName)
-            })
+
             if(currentFiltersList.length < responseFiltersContent.length) {
                 let filtredListContent = Array.from(responseFiltersContent).filter(function(item) {
                     return currentFiltersList.lastIndexOf(item.dataset.filterName) == -1
@@ -191,8 +191,6 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\Catalog;
                 this.isLoading = false;
             }
         },
-
     })
-
-
+})
 </script>

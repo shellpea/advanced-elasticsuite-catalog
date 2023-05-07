@@ -3,9 +3,6 @@
         <attribute name="class" value="page-with-filter"/>
 
         <move element="search.result" destination="category.list.view" />
-        <referenceContainer name="columns">
-            <block name="spruce.script" template="Shellpea_AdvancedElasticsuiteCatalog::page/js/spruce.phtml" before="-"></block>
-        </referenceContainer>
         <referenceContainer name="content">
             <container name="category.list.view" htmlTag="div" htmlClass="category-list-view" />
             <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog" name="shellpea.elastic.navigation"
