@@ -31,6 +31,19 @@ $isPriceSlider = (strpos($block->getDataRole(), 'price') !== false);
                 "displayCount": '<span class="msg"><%- count %> <?= __('items') ?></span>',
                 "displayEmpty": '<span class="msg-error"><?= __('No items in the current range.') ?></span>'
             },
+            minprice: 0,
+            maxprice: 0,
+            fromLabel: '',
+            toLabel: '',
+            min: 0,
+            max: 0,
+            minZindex: 0,
+            maxZindex: 0,
+            minthumb: 0,
+            maxthumb: 0,
+            message: '',
+            url: '',
+
             initialize: function () {
                 this.options = Object.assign({}, this.options, options);
                 this.url = this.options.urlTemplate;
@@ -114,7 +127,7 @@ $isPriceSlider = (strpos($block->getDataRole(), 'price') !== false);
                 } else {
                     this.minprice = this._getAdaptiveValue(Number(this.options.currentValue.from));
                 }
-                if (/^\d*$/.test(this.maxprice)) {
+                if (/^[\d.]*$/.test(this.maxprice)) {
                     if (this.maxprice > this.max) {
                         this.maxprice = this.max;
                     }

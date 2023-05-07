@@ -42,10 +42,13 @@ use Magento\LayeredNavigation\Block\Navigation;
             <?= $block->getChildHtml('state') ?>
             <?php foreach ($block->getFilters() as $filter): ?>
                 <?php if ($filter->getItemsCount()): ?>
-                    <?php $showOpen = in_array($filterIndex, $activeFilters) ?>
+                    <?php
+                        $showOpen = in_array($filterIndex, $activeFilters);
+                        $datascope = $filter->getRequestVar() . 'Filter';
+                    ?>
                     <div class="filter-option card my-4"
-                        data-filter-name="<?= $escaper->escapeHtmlAttr(__($filter->getName())) ?>"
-                        :class="{'hidden': !$store.category.config.items.filterItems.<?= $filter->getRequestVar() . 'Filter' ?>.length }"
+                        data-filter-name="<?= $escaper->escapeHtmlAttr(__($filter->getRequestVar() . 'Filter')) ?>"
+                        :class="{'hidden': !$store.category.config.items.filterItems.<?= $datascope ?>.length && !$store.category.hasMoreItems.<?= $datascope ?>}"
                         x-data="{ open: <?= $showOpen ? 'true' : 'false' ?> }">
                         <div
                             class="filter-options-title flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container"
@@ -65,7 +68,7 @@ use Magento\LayeredNavigation\Block\Navigation;
                             </span>
                         </div>
                         <div class="filter-options-content pt-3 hidden"
-                             :class="{ 'hidden': !open , 'block': 'open' }"
+                             :class="{ 'hidden': !open , 'block': open }"
                         >
                             <?= /* @noEscape */
                             $block->getChildBlock('renderer')->render($filter) ?>
