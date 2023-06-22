@@ -3,7 +3,7 @@ Magento 2 module enhancing ElasticSuite features for Hyva Theme. Adds smart ajax
 
 ## Key Features
 - Multiple Ajax filtering without page reloads
-- Multiselect Ajax Swatches
+- Multiselect Ajax Swatches 
 - Expandable and configurable Infinite Scroll
 
 
@@ -27,5 +27,4 @@ composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.2.1"
 ![Infinite Scroll button](https://user-images.githubusercontent.com/55882198/236670329-ba761d13-45a4-41a5-8723-f130d88926dd.png)
 ### Slider Configuration
 Direct Mode Active: Yes/No
-
 ![Admin Configurations](https://user-images.githubusercontent.com/55882198/236669994-8ddb17f9-8f37-445d-9bf0-6e039c6ddd67.png)
