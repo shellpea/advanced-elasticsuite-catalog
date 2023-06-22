@@ -25,7 +25,7 @@ class AddSliderToolbarOptions
         Json $json
     ) {
         $this->config = $config;
-        $this->json   = $json;
+        $this->json = $json;
     }
 
     public function afterGetJsonConfig(Slider $subject, $result): string

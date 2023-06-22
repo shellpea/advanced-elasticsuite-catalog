@@ -25,7 +25,7 @@ class AddCatalogToolbarOptions
         Json $json
     ) {
         $this->config = $config;
-        $this->json   = $json;
+        $this->json = $json;
     }
 
     /**

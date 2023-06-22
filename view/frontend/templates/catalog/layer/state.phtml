@@ -22,47 +22,49 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
 ?>
 <?php $filters = $block->getActiveFilters() ?>
 <div class="filter-current" x-data="{ open: true }">
-<?php if (!empty($filters)): ?>
-    <div class="bg-container-lighter border border-container p-4 md:px-4" x-data="{ open: true }">
-        <div class="filter-options-title flex justify-between items-center cursor-pointer"
-            @click="open = !open">
-            <strong><?= $escaper->escapeHtml(__('Active filtering')) ?></strong>
-            <span class="py-1 px-1 rounded border border-container">
-                <?= $heroicons->chevronDownHtml(
-                    'transition-transform transform duration-300 ease-in-out',
-                    24,
-                    24,
-                    [":class" => "{ 'rotate-180': open }"]
-                ); ?>
-            </span>
-        </div>
-        <div class="items pt-1 pb-3" x-show="open">
-            <?php foreach ($filters as $filter): ?>
-                <div class="item flex justify-between items-center">
-                    <span>
-                        <span class="filter-label block"><?= $escaper->escapeHtml(__($filter->getName())) ?></span>
-                        <span class="filter-value text-sm block">
-                            <?= $escaper->escapeHtml($block->stripTags($filter->getLabel())) ?>
+    <?php if (!empty($filters)): ?>
+        <div class="bg-container-lighter border border-container p-4 md:px-4" x-data="{ open: true }">
+            <div class="filter-options-title flex justify-between items-center cursor-pointer" @click="open = !open">
+                <strong>
+                    <?= $escaper->escapeHtml(__('Active filtering')) ?>
+                </strong>
+                <span class="py-1 px-1 rounded border border-container">
+                    <?= $heroicons->chevronDownHtml(
+                        'transition-transform transform duration-300 ease-in-out',
+                        24,
+                        24,
+                        [":class" => "{ 'rotate-180': open }"]
+                    ); ?>
+                </span>
+            </div>
+            <div class="items pt-1 pb-3" x-show="open">
+                <?php foreach ($filters as $filter): ?>
+                    <div class="item flex justify-between items-center">
+                        <span>
+                            <span class="filter-label block">
+                                <?= $escaper->escapeHtml(__($filter->getName())) ?>
+                            </span>
+                            <span class="filter-value text-sm block">
+                                <?= $escaper->escapeHtml($block->stripTags($filter->getLabel())) ?>
+                            </span>
                         </span>
-                    </span>
-                    <span>
-                        <a class="py-2 px-2 text-center block action remove text-primary hover:text-primary-darker"
-                        href="<?= $escaper->escapeUrl($filter->getRemoveUrl()) ?>"
-                        @click.prevent="$store.category.updateLayer($event.target.href)"
-                        title="<?= /* @noEscape */ $escaper->escapeHtmlAttr(__('Remove This Item')) ?>">
-                            <?= $heroicons->trashHtml('pointer-events-none', 20, 20); ?>
-                        </a>
-                    </span>
-                </div>
-            <?php endforeach; ?>
+                        <span>
+                            <a class="py-2 px-2 text-center block action remove text-primary hover:text-primary-darker"
+                                href="<?= $escaper->escapeUrl($filter->getRemoveUrl()) ?>"
+                                @click.prevent="$store.category.updateLayer($event.target.href)"
+                                title="<?= /* @noEscape */$escaper->escapeHtmlAttr(__('Remove This Item')) ?>">
+                                <?= $heroicons->trashHtml('pointer-events-none', 20, 20); ?>
+                            </a>
+                        </span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="block-actions filter-actions">
+                <a :href="$store.category.clearUrl" @click.prevent="$store.category.updateLayer($event.target.href)"
+                    class="filter-clear text-xs text-primary hover:text-primary-darker">
+                    <?= $escaper->escapeHtml(__('Clear All')) ?>
+                </a>
+            </div>
         </div>
-        <div class="block-actions filter-actions">
-            <a :href="$store.category.clearUrl"
-                @click.prevent="$store.category.updateLayer($event.target.href)"
-                class="filter-clear text-xs text-primary hover:text-primary-darker">
-                <?= $escaper->escapeHtml(__('Clear All')) ?>
-            </a>
-        </div>
-    </div>
-<?php endif; ?>
+    <?php endif; ?>
 </div>

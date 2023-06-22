@@ -37,7 +37,7 @@ class AddAjaxToCache
     ) {
         $this->request = $request;
         $this->context = $context;
-        $this->json    = $json;
+        $this->json = $json;
     }
 
     /**
@@ -49,12 +49,12 @@ class AddAjaxToCache
     public function afterGetValue(Identifier $subject, string $result): string
     {
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
-        $data   = [
+        $data = [
             $isAjax,
             $this->request->isSecure(),
             $this->request->getUriString(),
             $this->request->get(Http::COOKIE_VARY_STRING)
-                ?: $this->context->getVaryString()
+            ?: $this->context->getVaryString()
         ];
 
         return sha1($this->json->serialize($data));

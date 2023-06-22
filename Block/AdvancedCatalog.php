@@ -43,6 +43,7 @@ class AdvancedCatalog extends Template
      * @var Config $config
      */
     protected $config;
+
     /**
      * Json
      *
@@ -57,7 +58,7 @@ class AdvancedCatalog extends Template
     protected $layout;
 
     /**
-     * @var Data
+     * @var Swatches
      */
     protected $swatchHelper;
 
@@ -87,7 +88,7 @@ class AdvancedCatalog extends Template
         parent::__construct($context, $data);
 
         $this->config = $config;
-        $this->json   = $json;
+        $this->json = $json;
         $this->layout = $layout;
         $this->swatchHelper = $swatchHelper;
         $this->mediaHelper = $mediaHelper;
@@ -103,7 +104,7 @@ class AdvancedCatalog extends Template
         if ($this->productCollection === null) {
             /** @var ListProduct $productList */
             $productList;
-            if($this->isSearch()) {
+            if ($this->isSearch()) {
                 $productList = $this->layout->getBlock('search_result_list');
             } else {
                 $productList = $this->layout->getBlock('category.products.list');
@@ -135,8 +136,8 @@ class AdvancedCatalog extends Template
         }
 
         return [
-            'label'        => $filterItem->getLabel(),
-            'link'         => $linkToOption,
+            'label' => $filterItem->getLabel(),
+            'link' => $linkToOption,
             'custom_style' => $customStyle,
         ];
     }
@@ -195,25 +196,26 @@ class AdvancedCatalog extends Template
     /**
      * Get filter items
      *
-     * @return string[]
+     * @return array
      */
     protected function getFilterItems(): array
     {
-        /** @var Navigation $navBlock */
         $navBlock = $this->getNavBlock();
         $items = [];
         $swatchData = [];
         /** @var mixed[] $filters */
         $filters = $navBlock->getFilters();
+
         foreach ($filters as $filter) {
             $datascope = $filter->getRequestVar() . 'Filter';
+
             if (is_a($filter, Attribute::class)) {
                 $items[$datascope] = [];
                 $attribute = $filter->getAttributeModel();
                 foreach ($filter->getItems() as $item) {
-                    if($this->swatchHelper->isSwatchAttribute($attribute)) {
+                    if ($this->swatchHelper->isSwatchAttribute($attribute)) {
                         $resultOption = false;
-                        if($this->isShowEmptyResults($attribute)) {
+                        if ($this->isShowEmptyResults($attribute)) {
                             $resultOption = $this->getUnusedOption($item);
                         } elseif ($item && $this->isOptionVisible($item, $attribute)) {
                             $resultOption = $this->getOptionViewData($item);
@@ -227,10 +229,10 @@ class AdvancedCatalog extends Template
                             'count' => $item->getCount(),
                             'url' => $item->getUrl(),
                             'is_selected' => $item->getIsSelected(),
-                            'option_id' =>  $attributeOptionId[0],
+                            'option_id' => $attributeOptionId[0],
                             'option' => $resultOption,
                             'swatch' => $swatchData,
-                            'swatch_thumb' =>  $swatchThumbPath,
+                            'swatch_thumb' => $swatchThumbPath,
                             'swatch_image' => $swatchImagePath
                         ];
                     } else {
@@ -260,7 +262,7 @@ class AdvancedCatalog extends Template
      */
     protected function getActiveFilters(): string
     {
-        if($this->isSearch()) {
+        if ($this->isSearch()) {
             $activeFilters = $this->layout->getBlock('catalogsearch.navigation.state')->toHtml();
 
             return $activeFilters;
@@ -274,11 +276,11 @@ class AdvancedCatalog extends Template
     /**
      * Get Nav Block
      *
-     * @return Navigation
+     * @return \Magento\Framework\View\Element\BlockInterface | bool
      */
-    protected function getNavBlock(): Navigation
+    protected function getNavBlock(): \Magento\Framework\View\Element\BlockInterface
     {
-        if($this->isSearch()) {
+        if ($this->isSearch()) {
             $navBlock = $this->getLayout()->getBlock('catalogsearch.leftnav');
 
             return $navBlock;
@@ -307,20 +309,20 @@ class AdvancedCatalog extends Template
     public function getJsonConfig(): string
     {
         /** @var mixed[] $jsonConfig */
-        $jsonConfig             = [];
-        $jsonConfig['items']    = [
-            'filterItems'   => $this->getFilterItems(),
-            'activeFilter'  => $this->getActiveFilters(),
-            'pageSize'      => $this->getPageSize(),
-            'size'          => $this->getSize(),
-            'curPage'       => $this->getCurPage(),
+        $jsonConfig = [];
+        $jsonConfig['items'] = [
+            'filterItems' => $this->getFilterItems(),
+            'activeFilter' => $this->getActiveFilters(),
+            'pageSize' => $this->getPageSize(),
+            'size' => $this->getSize(),
+            'curPage' => $this->getCurPage(),
         ];
-        $jsonConfig['slider']   = [
+        $jsonConfig['slider'] = [
             'directMode' => $this->config->isValue(Config::SLIDER_DIRECT_MODE_ACTIVE),
         ];
         $jsonConfig['infinite'] = [
-            'active'          => $this->config->isValue(Config::INFINITE_ACTIVE),
-            'buttonLabel'     => $this->config->getValue(Config::INFINITE_BUTTON_LABEL),
+            'active' => $this->config->isValue(Config::INFINITE_ACTIVE),
+            'buttonLabel' => $this->config->getValue(Config::INFINITE_BUTTON_LABEL),
         ];
 
         return $this->json->serialize($jsonConfig);
@@ -332,7 +334,7 @@ class AdvancedCatalog extends Template
      */
     protected function getSize(): int
     {
-        return (int)$this->getProductList()->getSize();
+        return (int) $this->getProductList()->getSize();
     }
 
     /**
@@ -342,7 +344,7 @@ class AdvancedCatalog extends Template
      */
     protected function getPageSize(): int
     {
-        return (int)$this->getProductList()->getPageSize();
+        return (int) $this->getProductList()->getPageSize();
     }
 
     /**
@@ -352,6 +354,6 @@ class AdvancedCatalog extends Template
      */
     protected function getCurPage(): int
     {
-        return (int)$this->getProductList()->getCurPage();
+        return (int) $this->getProductList()->getCurPage();
     }
 }

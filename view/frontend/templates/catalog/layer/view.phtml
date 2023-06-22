@@ -13,26 +13,23 @@ use Magento\LayeredNavigation\Block\Navigation;
 
 // phpcs:disable Generic.Files.LineLength.TooLong
 
-/** @var $block Navigation */
-/** @var $escaper Escaper */
+/** @var Navigation $block */
+/** @var Escaper $escaper */
 ?>
-<?php if ($block->canShowBlock()) : ?>
+<?php if ($block->canShowBlock()): ?>
     <div class="block border border-container bg-container-darker p-4 md:border-0 md:bg-transparent md:py-0 md:px-0 my-6"
-         x-data="initLayeredNavigation()"
-         x-init="checkIsMobileResolution()"
-         @resize.window.debounce="checkIsMobileResolution()"
-         @visibilitychange.window.debounce="checkIsMobileResolution()"
-    >
+        x-data="initLayeredNavigation()" x-init="checkIsMobileResolution()"
+        @resize.window.debounce="checkIsMobileResolution()" @visibilitychange.window.debounce="checkIsMobileResolution()">
         <div class="block-title h-10 flex items-center justify-between" @click="blockOpen = !blockOpen">
-            <span class="text-primary text-md md:text-3xl font-medium uppercase"><?= $escaper->escapeHtml(__('Shop By')) ?></span>
+            <span class="text-primary text-md md:text-3xl font-medium uppercase">
+                <?= $escaper->escapeHtml(__('Shop By')) ?>
+            </span>
             <span class="py-1 px-1 bg-container-lighter rounded border border-container-darker hidden"
-                  :class="{ 'block' : isMobile, 'hidden': !isMobile }">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                     xmlns="http://www.w3.org/2000/svg"
-                     class="transition-transform transform duration-300 ease-in-out"
-                     :class="blockOpen ? 'rotate-180' : ''">
+                :class="{ 'block' : isMobile, 'hidden': !isMobile }">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="transition-transform transform duration-300 ease-in-out" :class="blockOpen ? 'rotate-180' : ''">
                     <path d="M19 9L12 16L5 9" stroke="#4A5568" stroke-width="2" stroke-linecap="round"
-                          stroke-linejoin="round"/>
+                        stroke-linejoin="round" />
                 </svg>
             </span>
         </div>
@@ -43,35 +40,30 @@ use Magento\LayeredNavigation\Block\Navigation;
             <?php foreach ($block->getFilters() as $filter): ?>
                 <?php if ($filter->getItemsCount()): ?>
                     <?php
-                        $showOpen = in_array($filterIndex, $activeFilters);
-                        $datascope = $filter->getRequestVar() . 'Filter';
+                    $showOpen = in_array($filterIndex, $activeFilters);
+                    $datascope = $filter->getRequestVar() . 'Filter';
                     ?>
                     <div class="filter-option card my-4"
                         data-filter-name="<?= $escaper->escapeHtmlAttr(__($filter->getRequestVar() . 'Filter')) ?>"
                         :class="{'hidden': !$store.category.config.items.filterItems.<?= $datascope ?>.length && !$store.category.hasMoreItems.<?= $datascope ?>}"
                         x-data="{ open: <?= $showOpen ? 'true' : 'false' ?> }">
-                        <div
-                            class="filter-options-title flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container"
-                            :class="{ 'border-b pb-4': open }"
-                            @click="open = !open">
+                        <div class="filter-options-title flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container"
+                            :class="{ 'border-b pb-4': open }" @click="open = !open">
                             <span class="title text-md md:text-lg font-semibold">
                                 <?= $escaper->escapeHtml(__($filter->getName())) ?>
-                                </span>
+                            </span>
                             <span class="py-1 px-1 rounded border border-container">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     class="transition-transform transform duration-300 ease-in-out"
-                                     :class="open ? 'rotate-180' : ''">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                    class="transition-transform transform duration-300 ease-in-out"
+                                    :class="open ? 'rotate-180' : ''">
                                     <path d="M19 9L12 16L5 9" stroke="#4A5568" stroke-width="2" stroke-linecap="round"
-                                          stroke-linejoin="round"/>
+                                        stroke-linejoin="round" />
                                 </svg>
                             </span>
                         </div>
-                        <div class="filter-options-content pt-3 hidden"
-                             :class="{ 'hidden': !open , 'block': open }"
-                        >
+                        <div class="filter-options-content pt-3 hidden" :class="{ 'hidden': !open , 'block': open }">
                             <?= /* @noEscape */
-                            $block->getChildBlock('renderer')->render($filter) ?>
+                                $block->getChildBlock('renderer')->render($filter) ?>
                         </div>
                     </div>
                     <?php $filterIndex++ ?>
