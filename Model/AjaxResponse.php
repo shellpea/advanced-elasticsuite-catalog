@@ -101,7 +101,7 @@ class AjaxResponse
         $resultJson->setData([
             'productList' => $htmlContent,
             'listFilterOptions' => $this->layout->getBlock($this->getLeftNavBlock())->toHtml(),
-            'filterItems' => $this->getFilterItems(),
+            'filterItems' => $this->getFilterItems($this->getLeftNavBlock()),
             'activeFilter' => $activeFilters,
             'pageSize' => $productCollection->getPageSize(),
             'size' => $productCollection->getSize(),
@@ -191,22 +191,21 @@ class AjaxResponse
      *
      * @return string[]
      */
-    protected function getFilterItems(): array
+    public function getFilterItems(string $navBlock): array
     {
         /** @var Navigation $leftNavBlock */
-        $leftNavBlock = $this->layout->getBlock($this->getLeftNavBlock());
-
+        $leftNavBlock = $this->layout->getBlock($navBlock);
         $items = [];
         $swatchData = [];
         /** @var mixed[] $filters */
         $filters = $leftNavBlock->getFilters();
         foreach ($filters as $filter) {
             $datascope = $filter->getRequestVar() . 'Filter';
-            if (is_a($filter, Attribute::class)) {
+            if ($filter instanceof Attribute) {
                 $items[$datascope] = [];
                 $attribute = $filter->getAttributeModel();
-                foreach ($filter->getItems() as $item) {
-                    if ($this->swatchHelper->isSwatchAttribute($attribute)) {
+                if ($this->swatchHelper->isSwatchAttribute($attribute)) {
+                    foreach ($filter->getItems() as $item) {
                         $resultOption = false;
                         if ($this->isShowEmptyResults($attribute)) {
                             $resultOption = $this->getUnusedOption($item);
@@ -228,7 +227,9 @@ class AjaxResponse
                             'swatch_thumb' => $swatchThumbPath,
                             'swatch_image' => $swatchImagePath
                         ];
-                    } else {
+                    }
+                } else {
+                    foreach ($filter->getItems() as $item) {
                         $items[$datascope][] = $item->toArray(['label', 'count', 'url', 'is_selected']);
                     }
                 }

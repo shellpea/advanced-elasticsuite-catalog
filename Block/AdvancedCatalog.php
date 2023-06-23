@@ -16,6 +16,7 @@ use Magento\Eav\Model\Entity\Attribute\Option;
 use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
 use Smile\ElasticsuiteSwatches\Helper\Swatches;
 use Magento\Swatches\Helper\Media;
+use Shellpea\AdvancedElasticsuiteCatalog\Model\AjaxResponse;
 
 /**
  * Class AdvancedCatalog
@@ -68,6 +69,11 @@ class AdvancedCatalog extends Template
     protected $mediaHelper;
 
     /**
+     * @var AjaxResponse $ajaxResponse
+     */
+    protected $ajaxResponse;
+
+    /**
      * Ajax constructor.
      *
      * @param Json             $json
@@ -83,6 +89,7 @@ class AdvancedCatalog extends Template
         Layout $layout,
         Swatches $swatchHelper,
         Media $mediaHelper,
+        AjaxResponse $ajaxResponse,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -92,6 +99,7 @@ class AdvancedCatalog extends Template
         $this->layout = $layout;
         $this->swatchHelper = $swatchHelper;
         $this->mediaHelper = $mediaHelper;
+        $this->ajaxResponse = $ajaxResponse;
     }
 
     /**
@@ -200,59 +208,7 @@ class AdvancedCatalog extends Template
      */
     protected function getFilterItems(): array
     {
-        $navBlock = $this->getNavBlock();
-        $items = [];
-        $swatchData = [];
-        /** @var mixed[] $filters */
-        $filters = $navBlock->getFilters();
-
-        foreach ($filters as $filter) {
-            $datascope = $filter->getRequestVar() . 'Filter';
-
-            if (is_a($filter, Attribute::class)) {
-                $items[$datascope] = [];
-                $attribute = $filter->getAttributeModel();
-                foreach ($filter->getItems() as $item) {
-                    if ($this->swatchHelper->isSwatchAttribute($attribute)) {
-                        $resultOption = false;
-                        if ($this->isShowEmptyResults($attribute)) {
-                            $resultOption = $this->getUnusedOption($item);
-                        } elseif ($item && $this->isOptionVisible($item, $attribute)) {
-                            $resultOption = $this->getOptionViewData($item);
-                        }
-                        $attributeOptionId = $this->swatchHelper->getOptionIds($attribute, $item['label']);
-                        $swatchData = $this->swatchHelper->getSwatchesByOptionsId($attributeOptionId);
-                        $swatchThumbPath = $this->mediaHelper->getSwatchAttributeImage('swatch_thumb', $swatchData[$attributeOptionId[0]]['value']);
-                        $swatchImagePath = $this->mediaHelper->getSwatchAttributeImage('swatch_image', $swatchData[$attributeOptionId[0]]['value']);
-                        $items[$datascope][] = [
-                            'label' => $item->getLabel(),
-                            'count' => $item->getCount(),
-                            'url' => $item->getUrl(),
-                            'is_selected' => $item->getIsSelected(),
-                            'option_id' => $attributeOptionId[0],
-                            'option' => $resultOption,
-                            'swatch' => $swatchData,
-                            'swatch_thumb' => $swatchThumbPath,
-                            'swatch_image' => $swatchImagePath
-                        ];
-                    } else {
-                        $items[$datascope][] = $item->toArray(['label', 'count', 'url', 'is_selected']);
-                    }
-                }
-            } else {
-                $items[$datascope] = [];
-                foreach ($filter->getItems() as $item) {
-                    $items[$datascope][] = [
-                        'label' => $item->getLabel(),
-                        'count' => $item->getCount(),
-                        'url' => $item->getUrl(),
-                    ];
-                }
-            }
-
-        }
-
-        return $items;
+        return $this->ajaxResponse->getFilterItems($this->getNavBlock());
     }
 
     /**
@@ -276,17 +232,17 @@ class AdvancedCatalog extends Template
     /**
      * Get Nav Block
      *
-     * @return \Magento\Framework\View\Element\BlockInterface | bool
+     * @return string
      */
-    protected function getNavBlock(): \Magento\Framework\View\Element\BlockInterface
+    protected function getNavBlock()
     {
         if ($this->isSearch()) {
-            $navBlock = $this->getLayout()->getBlock('catalogsearch.leftnav');
+            $navBlock = 'catalogsearch.leftnav';
 
             return $navBlock;
         }
 
-        $navBlock = $this->getLayout()->getBlock('catalog.leftnav');
+        $navBlock = 'catalog.leftnav';
 
         return $navBlock;
     }

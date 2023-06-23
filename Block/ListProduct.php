@@ -21,7 +21,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
     /**
      * @var ScopeConfigInterface
      */
-    private $scopeConfig;
+    protected $scopeConfig;
 
     /**
      * Config
@@ -33,12 +33,12 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
     /**
      * @var AttributeRepositoryInterface
      */
-    private $attributeRepository;
+    protected $attributeRepository;
 
     /**
      * @var CategoryFactory
      */
-    private $categoryFactory;
+    protected $categoryFactory;
 
     /**
      * @var CollectionFactory

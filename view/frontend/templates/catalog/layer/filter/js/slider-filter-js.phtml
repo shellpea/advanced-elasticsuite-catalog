@@ -193,8 +193,14 @@ $isPriceSlider = (strpos($block->getDataRole(), 'price') !== false);
                     from: this._getOriginalValue(this.minprice) * (1 / this.rate),
                     to: this._getOriginalValue(this.maxprice) * (1 / this.rate),
                 };
+                const searchParams = () => {
+                    let searchParams = new URL(window.location).searchParams
+                    searchParams.delete('price')
+                    searchParams.delete('q')
 
-                this.url = this._unescape(this.options.urlTemplate.replace('<%- from %>', range.from).replace('<%- to %>', range.to));
+                    return searchParams.size !== 0 ? '&' + searchParams.toString() : ''
+                }
+                this.url = this._unescape(this.options.urlTemplate.replace('<%- from %>', range.from).replace('<%- to %>', range.to) + searchParams());
             },
             _updateSliderZindexes: function () {
                 this.minZindex = this.sliderZindex;
