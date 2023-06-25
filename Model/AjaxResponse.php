@@ -11,7 +11,6 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\View\Layout;
 use Smile\ElasticsuiteCatalog\Block\Navigation;
 use Smile\ElasticsuiteCatalog\Model\Layer\Filter\Attribute;
-use Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection;
 use Smile\ElasticsuiteSwatches\Helper\Swatches;
 use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
 use Magento\Swatches\Helper\Media;
@@ -50,11 +49,11 @@ class AjaxResponse
     protected $layout;
 
     /**
-     * @var Data
+     * @var Swatches
      */
     protected $swatchHelper;
 
-     /**
+    /**
      * @var Media
      */
     protected $mediaHelper;
@@ -75,8 +74,8 @@ class AjaxResponse
         Context $context
     ) {
         $this->resultJsonFactory = $resultJsonFactory;
-        $this->context           = $context;
-        $this->layout           = $layout;
+        $this->context = $context;
+        $this->layout = $layout;
         $this->swatchHelper = $swatchHelper;
         $this->mediaHelper = $mediaHelper;
     }
@@ -95,19 +94,18 @@ class AjaxResponse
         //Need to calculate page size
         $htmlContent = $productList->toHtml();
         $activeFilters = $this->layout->getBlock('catalog.navigation.state') ?
-        $this->layout->getBlock('catalog.navigation.state')->toHtml() :
-        $this->layout->getBlock('catalogsearch.navigation.state')->toHtml();
-        /** @var Collection $productList */
+            $this->layout->getBlock('catalog.navigation.state')->toHtml() :
+            $this->layout->getBlock('catalogsearch.navigation.state')->toHtml();
         $productCollection = $productList->getLoadedProductCollection();
-        $resultJson        = $this->resultJsonFactory->create();
+        $resultJson = $this->resultJsonFactory->create();
         $resultJson->setData([
-            'productList'       => $htmlContent,
+            'productList' => $htmlContent,
             'listFilterOptions' => $this->layout->getBlock($this->getLeftNavBlock())->toHtml(),
-            'filterItems'       => $this->getFilterItems(),
-            'activeFilter'      => $activeFilters,
-            'pageSize'          => $productCollection->getPageSize(),
-            'size'              => $productCollection->getSize(),
-            'curPage'           => $productCollection->getCurPage(),
+            'filterItems' => $this->getFilterItems($this->getLeftNavBlock()),
+            'activeFilter' => $activeFilters,
+            'pageSize' => $productCollection->getPageSize(),
+            'size' => $productCollection->getSize(),
+            'curPage' => $productCollection->getCurPage(),
         ]);
 
         return $resultJson;
@@ -182,8 +180,8 @@ class AjaxResponse
         }
 
         return [
-            'label'        => $filterItem->getLabel(),
-            'link'         => $linkToOption,
+            'label' => $filterItem->getLabel(),
+            'link' => $linkToOption,
             'custom_style' => $customStyle,
         ];
     }
@@ -193,24 +191,23 @@ class AjaxResponse
      *
      * @return string[]
      */
-    protected function getFilterItems(): array
+    public function getFilterItems(string $navBlock): array
     {
         /** @var Navigation $leftNavBlock */
-        $leftNavBlock = $this->layout->getBlock($this->getLeftNavBlock());
-
+        $leftNavBlock = $this->layout->getBlock($navBlock);
         $items = [];
         $swatchData = [];
         /** @var mixed[] $filters */
         $filters = $leftNavBlock->getFilters();
         foreach ($filters as $filter) {
             $datascope = $filter->getRequestVar() . 'Filter';
-            if (is_a($filter, Attribute::class)) {
+            if ($filter instanceof Attribute) {
                 $items[$datascope] = [];
                 $attribute = $filter->getAttributeModel();
-                foreach ($filter->getItems() as $item) {
-                    if($this->swatchHelper->isSwatchAttribute($attribute)) {
+                if ($this->swatchHelper->isSwatchAttribute($attribute)) {
+                    foreach ($filter->getItems() as $item) {
                         $resultOption = false;
-                        if($this->isShowEmptyResults($attribute)) {
+                        if ($this->isShowEmptyResults($attribute)) {
                             $resultOption = $this->getUnusedOption($item);
                         } elseif ($item && $this->isOptionVisible($item, $attribute)) {
                             $resultOption = $this->getOptionViewData($item);
@@ -224,13 +221,15 @@ class AjaxResponse
                             'count' => $item->getCount(),
                             'url' => $item->getUrl(),
                             'is_selected' => $item->getIsSelected(),
-                            'option_id' =>  $attributeOptionId[0],
+                            'option_id' => $attributeOptionId[0],
                             'option' => $resultOption,
                             'swatch' => $swatchData,
-                            'swatch_thumb' =>  $swatchThumbPath,
+                            'swatch_thumb' => $swatchThumbPath,
                             'swatch_image' => $swatchImagePath
                         ];
-                    } else {
+                    }
+                } else {
+                    foreach ($filter->getItems() as $item) {
                         $items[$datascope][] = $item->toArray(['label', 'count', 'url', 'is_selected']);
                     }
                 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
@@ -25,6 +26,7 @@ $attributes = $block->decorateArray($block->getAllowAttributes());
 $swatchRendererViewModel = $viewModels->require(SwatchRenderer::class);
 
 $layout = $block->getLayout();
+
 $swatchItemBlock = $layout->getBlock('product.swatch.item');
 $swatchItemBlock->setData('product_id', $productId);
 ?>
@@ -65,7 +67,7 @@ $swatchItemBlock->setData('product_id', $productId);
 
                                 image && window.dispatchEvent(
                                     new CustomEvent(
-                                        "update-gallery-<?= (int)$productId ?>",
+                                        "update-gallery-<?= (int) $productId ?>",
                                         {detail: image}
                                     )
                                 );
@@ -138,12 +140,8 @@ $swatchItemBlock->setData('product_id', $productId);
                         })
                     }
 
-    }'
-         x-init="findAllowedAttributeOptions();"
-         @private-content-loaded.window="onGetCartData($event.detail.data)"
-         @resize.window="resizeEvent()"
-         class="mb-2 relative"
-    >
+    }' x-init="findAllowedAttributeOptions();" @private-content-loaded.window="onGetCartData($event.detail.data)"
+        @resize.window="resizeEvent()" class="mb-2 relative">
         <div>
             <?php foreach ($attributes as $attribute): ?>
                 <?php $attributeId = $attribute->getAttributeId(); ?>
@@ -153,24 +151,19 @@ $swatchItemBlock->setData('product_id', $productId);
                     continue;
                 } ?>
                 <div class="swatch-attribute border-t last:border-b border-container
-            <?= $escaper->escapeHtmlAttr($productAttribute->getAttributeCode()) ?>"
-                >
+            <?= $escaper->escapeHtmlAttr($productAttribute->getAttributeCode()) ?>">
                     <div class="w-full overflow-x-hidden swatch-attribute-options">
                         <div class="flex flex-nowrap w-full overflow-auto transition-all snap items-center py-1 min-h-14"
-                             role="radiogroup"
-                             x-spread="scrollEvents"
-                        >
+                            role="radiogroup" x-spread="scrollEvents">
                             <label class="sr-only"
-                                   for="attribute<?= $escaper->escapeHtmlAttr($productAttribute->getAttributeCode()) ?>"
-                            >
-                        <span>
-                            <?= $escaper->escapeHtml($productAttribute->getStoreLabel()) ?>
-                        </span>
+                                for="attribute<?= $escaper->escapeHtmlAttr($productAttribute->getAttributeCode()) ?>">
+                                <span>
+                                    <?= $escaper->escapeHtml($productAttribute->getStoreLabel()) ?>
+                                </span>
                             </label>
                             <template x-for="(item, index) in optionConfig.attributes[<?= (int) $attributeId ?>].options"
-                                      :key="item.id"
-                            >
-                                <?= /* @noEscape */ $swatchItemBlock->setData('attribute_id', $attributeId)->toHtml(); ?>
+                                :key="item.id">
+                                <?= /* @noEscape */$swatchItemBlock->setData('attribute_id', $attributeId)->toHtml(); ?>
                             </template>
                         </div>
                     </div>
@@ -178,7 +171,7 @@ $swatchItemBlock->setData('product_id', $productId);
             <?php endforeach; ?>
         </div>
         <?php if ($configurableViewModel->getShowSwatchTooltip()): ?>
-            <?= /* @noEscape */ $block->getBlockHtml('product.swatch.tooltip') ?>
+            <?= /* @noEscape */$block->getBlockHtml('product.swatch.tooltip') ?>
         <?php endif; ?>
     </div>
 <?php endif; ?>

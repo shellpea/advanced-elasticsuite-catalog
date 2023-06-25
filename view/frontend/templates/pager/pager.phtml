@@ -42,7 +42,7 @@ $pagerItemBtnClass = $pagerItemClass
     <?php if ($block->getUseContainer()): ?>
         <div class="grid items-center grid-flow-row grid-cols-4 gap-2 pager
             sm:grid-cols-8 md:grid-cols-4 lg:grid-cols-8">
-    <?php endif ?>
+    <?php endif; ?>
     <?php if ($isEnableInfinite == false): ?>
     <?php if ($block->getShowAmounts() && $isEnableInfinite == false): ?>
         <p class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
@@ -254,17 +254,17 @@ $pagerItemBtnClass = $pagerItemClass
                 <?php foreach ($block->getAvailableLimit() as $key => $limit): ?>
                     <option value="<?= $escaper->escapeUrl($block->getLimitUrl($key)) ?>"
                         <?php if ($block->isLimitCurrent($key)): ?>
-                            selected="selected"<?php endif ?>>
+                            selected="selected"<?php endif; ?>>
                         <?= $escaper->escapeHtml($localeFormatter->formatNumber((int) $limit)) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
             <span class="sr-only limiter-text"><?= $escaper->escapeHtml(__('per page')) ?></span>
         </div>
-    <?php endif ?>
+    <?php endif; ?>
 
     <?php if ($block->getUseContainer()): ?>
         </div>
-    <?php endif ?>
+    <?php endif; ?>
 
-<?php endif ?>
+<?php endif; ?>

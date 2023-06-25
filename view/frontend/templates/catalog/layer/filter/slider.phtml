@@ -1,14 +1,17 @@
 <?php
 
-/** @var $block \Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Slider */
-/** @var $escaper \Magento\Framework\Escaper  */
+use Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Slider;
+use Magento\Framework\Escaper;
+
+/** @var Slider $block */
+/** @var Escaper $escaper */
 
 ?>
 <?php
 $uniqueId = '_' . uniqid();
 $jsConfig = $this->getJsonConfig();
 $dataRole = $block->getDataRole();
-$childBlockName = (strpos($dataRole, 'price') !== false) ? 'renderer.price.slider' : 'renderer.slider' ;
+$childBlockName = (strpos($dataRole, 'price') !== false) ? 'renderer.price.slider' : 'renderer.slider';
 ?>
 <?= $block->getChildBlock($childBlockName)
     ->setUniqueId($uniqueId)
@@ -62,29 +65,39 @@ $childBlockName = (strpos($dataRole, 'price') !== false) ? 'renderer.price.slide
     <div x-data="rangeSlider<?= $uniqueId ?>({})" x-init="initialize()" class="relative max-w-xl w-full">
         <div class="flex justify-between items-center mb-8">
             <div>
-                <span x-model="minprice" x-text="fromLabel" class="px-3 py-2 border border-gray-200 rounded w-24 text-center"></span>
+                <span x-model="minprice" x-text="fromLabel"
+                    class="px-3 py-2 border border-gray-200 rounded w-24 text-center"></span>
             </div>
             <div>
-                <span x-model="maxprice" x-text="toLabel" class="px-3 py-2 border border-gray-200 rounded w-24 text-center"></span>
+                <span x-model="maxprice" x-text="toLabel"
+                    class="px-3 py-2 border border-gray-200 rounded w-24 text-center"></span>
             </div>
         </div>
 
         <div class="es-range-slider relative rounded-md bg-gray-200">
-            <input type="range" step="1" x-bind:min="min" x-bind:max="max" x-on:input="mintrigger" x-bind:style="'z-index: ' + minZindex" x-model="minprice" class="absolute pointer-events-none appearance-none h-2 w-full opacity-0 cursor-pointer">
-            <input type="range" step="1" x-bind:min="min" x-bind:max="max" x-on:input="maxtrigger" x-bind:style="'z-index: ' + maxZindex" x-model="maxprice" class="absolute pointer-events-none appearance-none h-2 w-full opacity-0 cursor-pointer">
+            <input type="range" step="1" x-bind:min="min" x-bind:max="max" x-on:input="mintrigger"
+                x-bind:style="'z-index: ' + minZindex" x-model="minprice"
+                class="absolute pointer-events-none appearance-none h-2 w-full opacity-0 cursor-pointer">
+            <input type="range" step="1" x-bind:min="min" x-bind:max="max" x-on:input="maxtrigger"
+                x-bind:style="'z-index: ' + maxZindex" x-model="maxprice"
+                class="absolute pointer-events-none appearance-none h-2 w-full opacity-0 cursor-pointer">
 
             <div class="relative z-10 h-2" style="height: 0.5rem; margin-right: 1.5rem;">
                 <div class="absolute z-10 left-0 right-0 bottom-0 top-0"></div>
-                <div class="absolute z-20 top-0 bottom-0 rounded-md bg-primary" x-bind:style="'right:'+ (100 - 1 - maxthumb)+'%; left:'+ minthumb+'%'"></div>
-                <div class="absolute z-30 w-6 h-6 top-0 left-0 bg-primary rounded-full -mt-2 thumb"  x-bind:style="'left: '+minthumb+'%'"></div>
-                <div class="absolute z-30 w-6 h-6 top-0 right-0 bg-primary rounded-full -mt-2 thumb" x-bind:style="'left: '+maxthumb+'%'"></div>
+                <div class="absolute z-20 top-0 bottom-0 rounded-md bg-primary"
+                    x-bind:style="'right:'+ (100 - 1 - maxthumb)+'%; left:'+ minthumb+'%'"></div>
+                <div class="absolute z-30 w-6 h-6 top-0 left-0 bg-primary rounded-full -mt-2 thumb"
+                    x-bind:style="'left: '+minthumb+'%'"></div>
+                <div class="absolute z-30 w-6 h-6 top-0 right-0 bg-primary rounded-full -mt-2 thumb"
+                    x-bind:style="'left: '+maxthumb+'%'"></div>
             </div>
         </div>
 
         <div class="mt-8 mb-8 h-6 flex justify-between items-center">
             <div x-html="message"></div>
             <div class="">
-                <a class="w-auto mr-auto btn btn-primary justify-center text-sm px-4 md:px-2 lg:px-4"  @click.prevent="$store.category.updateLayer($event.target.href)" x-model="url" :href="url">
+                <a class="w-auto mr-auto btn btn-primary justify-center text-sm px-4 md:px-2 lg:px-4"
+                    @click.prevent="$store.category.updateLayer($event.target.href)" x-model="url" :href="url">
                     <?= __('OK'); ?>
                 </a>
             </div>

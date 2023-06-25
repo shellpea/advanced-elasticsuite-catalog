@@ -3,6 +3,7 @@
 namespace Shellpea\AdvancedElasticsuiteCatalog\Block;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Shellpea\AdvancedElasticsuiteCatalog\Provider\Config;
 use Magento\Catalog\Block\Product\Context;
 use Magento\Catalog\Model\Layer\Resolver;
 use Magento\Framework\Data\Helper\PostHelper;
@@ -13,9 +14,43 @@ use Magento\Eav\Api\AttributeRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Registry;
 use Magento\Catalog\Model\CategoryFactory;
+use Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\CollectionFactory;
 
 class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
 {
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    /**
+     * Config
+     *
+     * @var Config $config
+     */
+    protected $config;
+
+    /**
+     * @var AttributeRepositoryInterface
+     */
+    protected $attributeRepository;
+
+    /**
+     * @var CategoryFactory
+     */
+    protected $categoryFactory;
+
+    /**
+     * @var CollectionFactory
+     */
+    protected $productCollectionFactory;
+
+    /**
+     * @var Registry
+     */
+    protected $registry;
+
+
     public function __construct(
         Context $context,
         PostHelper $postDataHelper,
@@ -26,7 +61,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         AttributeRepositoryInterface $attributeRepository,
         Registry $registry,
         CategoryFactory $categoryFactory,
-        \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\CollectionFactory $productCollectionFactory,
+        CollectionFactory $productCollectionFactory,
         array $data = []
     ) {
         $this->scopeConfig = $scopeConfig;
@@ -46,20 +81,18 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
 
     public function getCacheKeyInfo()
     {
-        $keyInfo = parent::getCacheKeyInfo();
-        return $keyInfo;
+        return parent::getCacheKeyInfo();
     }
 
     public function getProductsFromPrevPages()
     {
         $curPageNumber = $this->getRequest()->getParam('p');
         if (!$this->getRequest()->isAjax() && $curPageNumber > 1) {
-            $categoryId = $this->registry->registry('current_category')->getId();
-            $category_product_collection = $this->categoryFactory->create()->load($categoryId);
-            /** @var \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection $prevProductCollection */
+            $category = $this->_catalogLayer->getCurrentCategory();
+
             $prevProductCollection = $this->productCollectionFactory->create();
             $prevProductCollection->addAttributeToSelect('*');
-            $prevProductCollection->addCategoryFilter($category_product_collection);
+            $prevProductCollection->addCategoryFilter($category);
 
             foreach ($this->getRequest()->getParams() as $attributeCode => $optionLabel) {
                 if (is_array($optionLabel)) {
@@ -90,20 +123,10 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         );
     }
 
-    public function getPageSeparationLabel($curPage)
-    {
-        $label = $this->scopeConfig->getValue(
-            'smile_elasticsuite_ajax_settings/infinite/page_separation_label',
-            ScopeInterface::SCOPE_STORES
-        );
-
-        return str_replace('%number', (int) $curPage, (string) $label);
-    }
-
     public function isInfinityActive()
     {
         return $this->scopeConfig->getValue(
-            'smile_elasticsuite_ajax_settings/infinite/active',
+            Config::INFINITE_ACTIVE,
             ScopeInterface::SCOPE_STORES
         );
     }
@@ -122,7 +145,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         $curPageNumber = $this->getRequest()->getParam('p');
         if (!$this->getRequest()->isAjax() && $curPageNumber > 1) {
             $prevProductCollection = $this->getSearchCollection();
-            $prevProductCollection->setCurPage(null);
+            $prevProductCollection->setCurPage($curPageNumber - 1);
             $prevProductCollection->setPageSize($this->getPageSize() * ($curPageNumber - 1));
 
             return $prevProductCollection;
@@ -134,7 +157,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         /** @var \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection $searchCollection */
         $searchCollection = $this->productCollectionFactory->create();
         $searchCollection->addAttributeToSelect('*');
-        $searchCollection->addSearchFilter($this->getRequest()->getParam('q'));
+        $searchCollection->setSearchQuery($this->getRequest()->getParam('q'));
 
         foreach ($this->getRequest()->getParams() as $attributeCode => $optionLabel) {
             if (is_array($optionLabel)) {

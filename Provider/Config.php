@@ -65,7 +65,7 @@ class Config
      */
     public function isValue(string $path, $store = null): bool
     {
-        return (bool)$this->scopeConfig->getValue(
+        return (bool) $this->scopeConfig->getValue(
             $path,
             ScopeInterface::SCOPE_STORES,
             $store
@@ -82,7 +82,7 @@ class Config
      */
     public function getValue(string $path, $store = null): string
     {
-        return (string)$this->scopeConfig->getValue(
+        return (string) $this->scopeConfig->getValue(
             $path,
             ScopeInterface::SCOPE_STORES,
             $store

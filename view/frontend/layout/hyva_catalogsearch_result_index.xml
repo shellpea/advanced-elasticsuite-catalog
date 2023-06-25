@@ -31,12 +31,12 @@
         <referenceContainer name="sidebar.main">
             <referenceBlock name="catalogsearch.leftnav"
                    template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/view.phtml">
-                <referenceBlock name="catalogsearch.navigation.state" />
+                <referenceBlock name="catalogsearch.navigation.state" template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/state.phtml" />
                 <referenceBlock name="catalogsearch.navigation.renderer">
 
                     <referenceBlock name="catalogsearch.navigation.renderer.attribute"
                         template="Shellpea_AdvancedElasticsuiteCatalog::catalog/layer/filter/attribute.phtml">
-                        <referenceBlock name="attribute-filter-js" remove="true"/>
+                        <referenceBlock name="attribute-filter-js"/>
                     </referenceBlock>
 
                     <referenceBlock class="Smile\ElasticsuiteCatalog\Block\Navigation\Renderer\Category"

@@ -16,6 +16,7 @@ use Magento\Eav\Model\Entity\Attribute\Option;
 use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
 use Smile\ElasticsuiteSwatches\Helper\Swatches;
 use Magento\Swatches\Helper\Media;
+use Shellpea\AdvancedElasticsuiteCatalog\Model\AjaxResponse;
 
 /**
  * Class AdvancedCatalog
@@ -43,6 +44,7 @@ class AdvancedCatalog extends Template
      * @var Config $config
      */
     protected $config;
+
     /**
      * Json
      *
@@ -57,7 +59,7 @@ class AdvancedCatalog extends Template
     protected $layout;
 
     /**
-     * @var Data
+     * @var Swatches
      */
     protected $swatchHelper;
 
@@ -65,6 +67,11 @@ class AdvancedCatalog extends Template
      * @var Media
      */
     protected $mediaHelper;
+
+    /**
+     * @var AjaxResponse $ajaxResponse
+     */
+    protected $ajaxResponse;
 
     /**
      * Ajax constructor.
@@ -82,15 +89,17 @@ class AdvancedCatalog extends Template
         Layout $layout,
         Swatches $swatchHelper,
         Media $mediaHelper,
+        AjaxResponse $ajaxResponse,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
         $this->config = $config;
-        $this->json   = $json;
+        $this->json = $json;
         $this->layout = $layout;
         $this->swatchHelper = $swatchHelper;
         $this->mediaHelper = $mediaHelper;
+        $this->ajaxResponse = $ajaxResponse;
     }
 
     /**
@@ -103,7 +112,7 @@ class AdvancedCatalog extends Template
         if ($this->productCollection === null) {
             /** @var ListProduct $productList */
             $productList;
-            if($this->isSearch()) {
+            if ($this->isSearch()) {
                 $productList = $this->layout->getBlock('search_result_list');
             } else {
                 $productList = $this->layout->getBlock('category.products.list');
@@ -135,8 +144,8 @@ class AdvancedCatalog extends Template
         }
 
         return [
-            'label'        => $filterItem->getLabel(),
-            'link'         => $linkToOption,
+            'label' => $filterItem->getLabel(),
+            'link' => $linkToOption,
             'custom_style' => $customStyle,
         ];
     }
@@ -195,62 +204,11 @@ class AdvancedCatalog extends Template
     /**
      * Get filter items
      *
-     * @return string[]
+     * @return array
      */
     protected function getFilterItems(): array
     {
-        /** @var Navigation $navBlock */
-        $navBlock = $this->getNavBlock();
-        $items = [];
-        $swatchData = [];
-        /** @var mixed[] $filters */
-        $filters = $navBlock->getFilters();
-        foreach ($filters as $filter) {
-            $datascope = $filter->getRequestVar() . 'Filter';
-            if (is_a($filter, Attribute::class)) {
-                $items[$datascope] = [];
-                $attribute = $filter->getAttributeModel();
-                foreach ($filter->getItems() as $item) {
-                    if($this->swatchHelper->isSwatchAttribute($attribute)) {
-                        $resultOption = false;
-                        if($this->isShowEmptyResults($attribute)) {
-                            $resultOption = $this->getUnusedOption($item);
-                        } elseif ($item && $this->isOptionVisible($item, $attribute)) {
-                            $resultOption = $this->getOptionViewData($item);
-                        }
-                        $attributeOptionId = $this->swatchHelper->getOptionIds($attribute, $item['label']);
-                        $swatchData = $this->swatchHelper->getSwatchesByOptionsId($attributeOptionId);
-                        $swatchThumbPath = $this->mediaHelper->getSwatchAttributeImage('swatch_thumb', $swatchData[$attributeOptionId[0]]['value']);
-                        $swatchImagePath = $this->mediaHelper->getSwatchAttributeImage('swatch_image', $swatchData[$attributeOptionId[0]]['value']);
-                        $items[$datascope][] = [
-                            'label' => $item->getLabel(),
-                            'count' => $item->getCount(),
-                            'url' => $item->getUrl(),
-                            'is_selected' => $item->getIsSelected(),
-                            'option_id' =>  $attributeOptionId[0],
-                            'option' => $resultOption,
-                            'swatch' => $swatchData,
-                            'swatch_thumb' =>  $swatchThumbPath,
-                            'swatch_image' => $swatchImagePath
-                        ];
-                    } else {
-                        $items[$datascope][] = $item->toArray(['label', 'count', 'url', 'is_selected']);
-                    }
-                }
-            } else {
-                $items[$datascope] = [];
-                foreach ($filter->getItems() as $item) {
-                    $items[$datascope][] = [
-                        'label' => $item->getLabel(),
-                        'count' => $item->getCount(),
-                        'url' => $item->getUrl(),
-                    ];
-                }
-            }
-
-        }
-
-        return $items;
+        return $this->ajaxResponse->getFilterItems($this->getNavBlock());
     }
 
     /**
@@ -260,7 +218,7 @@ class AdvancedCatalog extends Template
      */
     protected function getActiveFilters(): string
     {
-        if($this->isSearch()) {
+        if ($this->isSearch()) {
             $activeFilters = $this->layout->getBlock('catalogsearch.navigation.state')->toHtml();
 
             return $activeFilters;
@@ -274,17 +232,17 @@ class AdvancedCatalog extends Template
     /**
      * Get Nav Block
      *
-     * @return Navigation
+     * @return string
      */
-    protected function getNavBlock(): Navigation
+    protected function getNavBlock()
     {
-        if($this->isSearch()) {
-            $navBlock = $this->getLayout()->getBlock('catalogsearch.leftnav');
+        if ($this->isSearch()) {
+            $navBlock = 'catalogsearch.leftnav';
 
             return $navBlock;
         }
 
-        $navBlock = $this->getLayout()->getBlock('catalog.leftnav');
+        $navBlock = 'catalog.leftnav';
 
         return $navBlock;
     }
@@ -307,20 +265,20 @@ class AdvancedCatalog extends Template
     public function getJsonConfig(): string
     {
         /** @var mixed[] $jsonConfig */
-        $jsonConfig             = [];
-        $jsonConfig['items']    = [
-            'filterItems'   => $this->getFilterItems(),
-            'activeFilter'  => $this->getActiveFilters(),
-            'pageSize'      => $this->getPageSize(),
-            'size'          => $this->getSize(),
-            'curPage'       => $this->getCurPage(),
+        $jsonConfig = [];
+        $jsonConfig['items'] = [
+            'filterItems' => $this->getFilterItems(),
+            'activeFilter' => $this->getActiveFilters(),
+            'pageSize' => $this->getPageSize(),
+            'size' => $this->getSize(),
+            'curPage' => $this->getCurPage(),
         ];
-        $jsonConfig['slider']   = [
+        $jsonConfig['slider'] = [
             'directMode' => $this->config->isValue(Config::SLIDER_DIRECT_MODE_ACTIVE),
         ];
         $jsonConfig['infinite'] = [
-            'active'          => $this->config->isValue(Config::INFINITE_ACTIVE),
-            'buttonLabel'     => $this->config->getValue(Config::INFINITE_BUTTON_LABEL),
+            'active' => $this->config->isValue(Config::INFINITE_ACTIVE),
+            'buttonLabel' => $this->config->getValue(Config::INFINITE_BUTTON_LABEL),
         ];
 
         return $this->json->serialize($jsonConfig);
@@ -332,7 +290,7 @@ class AdvancedCatalog extends Template
      */
     protected function getSize(): int
     {
-        return (int)$this->getProductList()->getSize();
+        return (int) $this->getProductList()->getSize();
     }
 
     /**
@@ -342,7 +300,7 @@ class AdvancedCatalog extends Template
      */
     protected function getPageSize(): int
     {
-        return (int)$this->getProductList()->getPageSize();
+        return (int) $this->getProductList()->getPageSize();
     }
 
     /**
@@ -352,6 +310,6 @@ class AdvancedCatalog extends Template
      */
     protected function getCurPage(): int
     {
-        return (int)$this->getProductList()->getCurPage();
+        return (int) $this->getProductList()->getCurPage();
     }
 }
