@@ -22,43 +22,42 @@ $datascope = $this->getFilter()->getRequestVar() . 'Filter';
         ->setScope($datascope)
         ->toHtml() ?>
 
-    <div class="<?= $escaper->escapeHtml($datascope); ?>" x-data="initSmileAttibute<?= $uniqueId ?>()"'>
-            <div class="field search"  x-show="displaySearch">
-                <div class="control">
-                    <input class="filter-search w-full mb-2"
-                           type="text"
-                           autocomplete="off"
-                           :placeholder="searchPlaceholder"
-                           @keyup="onSearchChange"
-                           @focusout="onSearchFocusOut" />
-                </div>
+    <div class="<?= $escaper->escapeHtml($datascope); ?>" x-data="initSmileAttibute<?= $uniqueId ?>">
+        <div class="field search" x-show="displaySearch">
+            <div class="control">
+                <input class="filter-search w-full mb-2" type="text" autocomplete="off" :placeholder="searchPlaceholder"
+                    @keyup="onSearchChange" @focusout="onSearchFocusOut" />
             </div>
-            <ol class="items">
-                <template x-for="attribute in $store.category.config.items.filterItems.<?= $datascope ?>" hidden>
-                    <li class="item my-1">
-                    <a :href="attribute.url" class="flex justify-between mt-1.5 py-1 pr-1 text-sm hover:bg-gray-200 hover:text-black" @click.prevent="$store.category.updateLayer($event.target.href)">
-                        <div class="flex items-center px-1.5 pointer-events-none">
-                            <input class="pointer-events-none mr-1" type="checkbox" :checked="attribute.is_selected"/>
-                            <span class="pointer-events-none" x-text="attribute.label" ></span>
-                        </div>
-                        <span class="pointer-events-none count text-primary ml-1" x-text="' (' + attribute.count + ')'"></span>
-                    </a>
-                    </li>
-                </template>
-            </ol>
-
-            <div class=" no-results-message empty" x-model="result" x-show="getFulltextSearch() && !hasSearchResult()">
-        <p x-html="getSearchResultMessage()"></p>
-    </div>
-
-    <div class="actions" x-show="enableExpansion()">
-        <div class="secondary text-right">
-            <a class="action show-more underline text-secondary cursor-pointer" x-on:click="onShowMore()"
-                x-show="displayShowMore()"><span x-text="showMoreLabel + '+'"></span></a>
-            <a class="action show-less underline text-secondary cursor-pointer" x-on:click="onShowLess()"
-                x-show="displayShowLess()"><span x-text="showLessLabel + '-'"></span></a>
         </div>
-    </div>
+        <ol class="items">
+            <template x-for="attribute in $store.category.config.items.filterItems.<?= $datascope ?>" hidden>
+                <li class="item my-1">
+                    <a :href="attribute.url"
+                        class="flex justify-between mt-1.5 py-1 pr-1 text-sm hover:bg-gray-200 hover:text-black"
+                        @click.prevent="$store.category.updateLayer($event.target.href); expanded = false;">
+                        <div class="flex items-center px-1.5 pointer-events-none">
+                            <input class="pointer-events-none mr-1" type="checkbox" :checked="attribute.is_selected" />
+                            <span class="pointer-events-none" x-text="attribute.label"></span>
+                        </div>
+                        <span class="pointer-events-none count text-primary ml-1"
+                            x-text="' (' + attribute.count + ')'"></span>
+                    </a>
+                </li>
+            </template>
+        </ol>
+
+        <div class="no-results-message empty" x-model="result" x-show="getFulltextSearch() && !hasSearchResult()">
+            <p x-html="getSearchResultMessage()"></p>
+        </div>
+
+        <div class="actions" x-show="enableExpansion()">
+            <div class="secondary text-right">
+                <a class="action show-more underline text-secondary cursor-pointer" x-on:click="onShowMore()"
+                    x-show="displayShowMore()"><span x-text="showMoreLabel + '+'"></span></a>
+                <a class="action show-less underline text-secondary cursor-pointer" x-on:click="onShowLess()"
+                    x-show="displayShowLess()"><span x-text="showLessLabel + '-'"></span></a>
+            </div>
+        </div>
     </div>
 
 <?php endif; ?>

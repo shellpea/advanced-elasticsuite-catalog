@@ -9,17 +9,17 @@ use Magento\Framework\Escaper;
 $uniqueId = $block->getData('unique_id');
 ?>
 <script>
-    function initSmileAttibute<?= $uniqueId ?>() {
-        "use strict";
-
-        return {
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('initSmileAttibute<?= $uniqueId ?>', () => ({
             options: <?= $block->getData('js_layout') ?>,
+            filterName: '<?= $block->getData('scope') ?>',
             searchLabel: `<?= __("Search (%s)") ?>`,
             showMoreLabel: `<?= __("Show more") ?>`,
             showLessLabel: `<?= __("Show less") ?>`,
             noSearchResultLabel: `<?= __("No value matching the search <b>%s</b>.") ?>`,
             expanded: false,
             items: [],
+            ajaxUrl: '',
             lastSelectIndex: 0,
             maxSize: 0,
             displaySearch: false,
@@ -28,15 +28,14 @@ $uniqueId = $block->getData('unique_id');
             searchPlaceholder: '',
             result: 0,
 
-
             /**
              * Component initialization
              */
             init() {
-                Alpine.store('category').hasMoreItems[`<?= $block->getData('scope') ?>`] = this.options.hasMoreItems
+                Alpine.store('category').hasMoreItems[this.filterName] = this.options.hasMoreItems
                 this.items = this.options.items.map(this.addItemId.bind(this));
 
-                var lastSelectedIndex = Math.max.apply(null, (this.items.map(
+                let lastSelectedIndex = Math.max.apply(null, (this.items.map(
                     function (v, k) { return v["is_selected"] ? k : 0; }))
                 );
                 this.maxSize = Math.max(this.options.maxSize, lastSelectedIndex + 1);
@@ -47,11 +46,22 @@ $uniqueId = $block->getData('unique_id');
                 this.displayedItems = this.getDisplayedItems();
             },
 
+            revalidateUrl() {
+                let urlParams = new URLSearchParams(window.location.search).toString();
+                let updatedUrl = !!urlParams && `${this.options.ajaxLoadUrl}&${urlParams}`
+                if (!!updatedUrl && updatedUrl != this.ajaxUrl) {
+                    this.options.hasMoreItems = true
+                    this.ajaxUrl = updatedUrl
+                } else {
+                    this.ajaxUrl = this.options.ajaxLoadUrl
+                }
+            },
+
             /**
              * Init the place holder
              */
             initSearchPlaceholder: function () {
-                var examples = this.items.slice(0, 2).map(function (item) { return item.label });
+                let examples = this.items.slice(0, 2).map(function (item) { return item.label });
 
                 if (this.items.length > 2) {
                     examples.push("...");
@@ -68,7 +78,7 @@ $uniqueId = $block->getData('unique_id');
              * Triggered when typing on the search input
              */
             onSearchChange: function (event) {
-                var text = event.target.value;
+                let text = event.target.value;
                 if (text.trim() === "") {
                     this.fulltextSearch = null;
                     this.onShowLess();
@@ -84,7 +94,7 @@ $uniqueId = $block->getData('unique_id');
              * Triggered when leaving the search field.
              */
             onSearchFocusOut: function (event) {
-                var text = event.target.value;
+                let text = event.target.value;
                 if (text.trim() === "") {
                     this.fulltextSearch = null;
                 }
@@ -95,23 +105,19 @@ $uniqueId = $block->getData('unique_id');
              *
              * @param callback
              */
-            loadAdditionalItems: function (callback) {
-                fetch(this.options.ajaxLoadUrl, {
+            loadAdditionalItems: async function (callback) {
+                const response = await fetch(this.ajaxUrl, {
                     method: "GET",
                     headers: {
                         "X-Requested-With": "XMLHttpRequest",
                     },
                 })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        this.items = data.map(this.addItemId.bind(this));
-                        this.options.hasMoreItems = false;
+                const data = await response.json()
+                console.log(data);
+                this.items = data.map(this.addItemId.bind(this))
+                this.options.hasMoreItems = false
 
-                        if (callback) {
-                            return callback();
-                        }
-                    }
-                    );
+                if (callback) return callback()
             },
 
             /**
@@ -120,26 +126,26 @@ $uniqueId = $block->getData('unique_id');
              * @returns {*}
              */
             getDisplayedItems: function () {
-                var items = this.items;
+                let items = this.items;
 
                 if (this.expanded === false) {
                     items = this.items.slice(0, this.maxSize);
                 }
 
                 if (this.getFulltextSearch()) {
-                    var searchTokens = this.slugify(this.getFulltextSearch()).split("-");
-                    var lastSearchToken = searchTokens.splice(-1, 1)[0];
+                    let searchTokens = this.slugify(this.getFulltextSearch()).split("-");
+                    let lastSearchToken = searchTokens.splice(-1, 1)[0];
 
                     items = items.filter(function (item) {
-                        var isValidItem = true;
-                        var itemTokens = this.slugify(item.label).split("-");
+                        let isValidItem = true;
+                        let itemTokens = this.slugify(item.label).split("-");
                         searchTokens.forEach(function (currentToken) {
                             if (itemTokens.indexOf(currentToken) === -1) {
                                 isValidItem = false;
                             }
                         })
                         if (isValidItem && lastSearchToken) {
-                            var ngrams = itemTokens.map(function (token) { return token.substring(0, lastSearchToken.length) });
+                            let ngrams = itemTokens.map(function (token) { return token.substring(0, lastSearchToken.length) });
                             isValidItem = ngrams.indexOf(lastSearchToken) !== -1;
                         }
                         return isValidItem;
@@ -170,12 +176,13 @@ $uniqueId = $block->getData('unique_id');
             /**
              * Callback for the "Show more" button
              */
-            onShowMore: function () {
+            onShowMore: async function () {
+                await this.revalidateUrl()
                 if (this.options.hasMoreItems) {
                     this.loadAdditionalItems(this.onShowMore.bind(this));
                 } else {
                     this.expanded = true;
-                    Alpine.store('category').config.items.filterItems[`<?= $block->getData('scope') ?>`] = this.getDisplayedItems();
+                    Alpine.store('category').config.items.filterItems[this.filterName] = this.getDisplayedItems();
                 }
 
                 this.displayedItems = this.getDisplayedItems();
@@ -195,9 +202,10 @@ $uniqueId = $block->getData('unique_id');
             /**
              * Callback for the "Show less" button
              */
-            onShowLess: function () {
+            onShowLess: async function () {
+                await this.revalidateUrl()
                 this.expanded = false;
-                Alpine.store('category').config.items.filterItems["<?= $block->getData('scope') ?>"] = this.getDisplayedItems();
+                Alpine.store('category').config.items.filterItems[this.filterName] = this.getDisplayedItems();
                 this.displayedItems = this.getDisplayedItems();
             },
 
@@ -237,6 +245,7 @@ $uniqueId = $block->getData('unique_id');
 
                 return item;
             },
-        };
-    };
+        }))
+    })
+
 </script>

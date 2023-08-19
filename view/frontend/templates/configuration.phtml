@@ -12,9 +12,9 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
         Alpine.store('category', {
             config: <?= $block->getJsonConfig() ?>,
             get clearUrl() {
-                const { protocol, host, pathname, searchParams } = new URL(window.location)
-
-                return `${protocol}//${host}${pathname}${searchParams.has('q') ? '?q=' + searchParams.get('q').toString() : ''}`;
+                const { protocol, host, pathname, searchParams } = new URL(window.location);
+                const queryParam = searchParams.has('q') ? '?q=' + searchParams.get('q').toString() : '';
+                return protocol + '//' + host + pathname + queryParam;
             },
             get current_href() {
                 return window.location.href;
