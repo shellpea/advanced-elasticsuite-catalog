@@ -113,7 +113,6 @@ $uniqueId = $block->getData('unique_id');
                     },
                 })
                 const data = await response.json()
-                console.log(data);
                 this.items = data.map(this.addItemId.bind(this))
                 this.options.hasMoreItems = false
 

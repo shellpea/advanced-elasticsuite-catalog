@@ -51,8 +51,12 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                         <span>
                             <a class="py-2 px-2 text-center block action remove text-primary hover:text-primary-darker"
                                 href="<?= $escaper->escapeUrl($filter->getRemoveUrl()) ?>"
-                                @click.prevent="$store.category.updateLayer($event.target.href)"
-                                title="<?= /* @noEscape */$escaper->escapeHtmlAttr(__('Remove This Item')) ?>">
+                                @click.prevent="
+                                    $store.category.updateLayer($event.target.href);
+                                    if('<?= $escaper->escapeHtml($filter->getName()) ?>' === 'Price' ) {
+                                        $dispatch('slider-update')
+                                    }"
+                                aria-label="<?= /* @noEscape */$escaper->escapeHtmlAttr(__('Remove This Item')) ?>">
                                 <?= $heroicons->trashHtml('pointer-events-none', 20, 20); ?>
                             </a>
                         </span>
@@ -60,7 +64,8 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                 <?php endforeach; ?>
             </div>
             <div class="block-actions filter-actions">
-                <a :href="$store.category.clearUrl" @click.prevent="$store.category.updateLayer($event.target.href)"
+                <a :href="$store.category.clearUrl"
+                    @click.prevent="$store.category.updateLayer($event.target.href); $dispatch('slider-update');"
                     class="filter-clear text-xs text-primary hover:text-primary-darker">
                     <?= $escaper->escapeHtml(__('Clear All')) ?>
                 </a>
