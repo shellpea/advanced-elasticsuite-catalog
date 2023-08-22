@@ -11,33 +11,34 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
     document.addEventListener('alpine:init', () => {
         Alpine.store('category', {
             config: <?= $block->getJsonConfig() ?>,
+            urlParams: new URLSearchParams(decodeURI(window.location.search).replace(/\[(\d*)\]/g, '')),
+            isLoading: false,
+            hasMoreItems: {},
             get clearUrl() {
-                const { protocol, host, pathname, searchParams } = new URL(window.location);
+                const { protocol, host, pathname, searchParams } = new URL(window.location.href);
                 const queryParam = searchParams.has('q') ? '?q=' + searchParams.get('q').toString() : '';
                 return protocol + '//' + host + pathname + queryParam;
             },
             get current_href() {
                 return window.location.href;
             },
-            urlParams: new URLSearchParams(decodeURI(window.location.search).replace(/\[(\d*)\]/g, '')),
-            isLoading: false,
-            hasMoreItems: {},
             get sentence() {
-                let sentence;
-                let current = this.config.items.pageSize * this.config.items.curPage > this.config.items.size ?
-                    this.config.items.size :
-                    this.config.items.pageSize * this.config.items.curPage;
-                if (this.config.items.size / this.config.items.pageSize > 1) {
-                    sentence = `Items %1-%2 of %3`
-                        .replace(/%1/, 1)
-                        .replace(/%2/, current)
-                        .replace(/%3/, this.config.items.size);
-                } else if (this.config.items.size == 1) {
-                    sentence = `%1 Item`.replace(/%1/, this.config.items.size);
+                const current = Math.min(
+                    this.config.items.pageSize * this.config.items.curPage,
+                    this.config.items.size
+                );
+
+                return this.generateSentence(current, this.config.items.size);
+            },
+
+            generateSentence(current, total) {
+                if (total > this.config.items.pageSize) {
+                    return `Items 1-${current} of ${total}`;
+                } else if (total === 1) {
+                    return `1 Item`;
                 } else {
-                    sentence = `%1 Items`.replace(/%1/, this.config.items.size);
+                    return `${total} Items`;
                 }
-                return sentence;
             },
             get isHidden() {
                 return this.config.infinite.active && this.config.items.curPage * this.config.items.pageSize >= this.config.items.size
@@ -45,74 +46,69 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
             get currentUrl() {
                 return this.buildUrl(this.current_href, 'p', parseInt(this.config.items.curPage) + 1);
             },
-            getMultipleFilterValues: function () {
-                let filterList = [];
-                document.querySelectorAll('.filter-content .filter-option').forEach(filterItem => {
-                    filterList.push(filterItem.dataset.filterName)
-                })
-                return filterList;
+            getMultipleFilterValues() {
+                return Array.from(document.querySelectorAll('.filter-content .filter-option'))
+                    .map(filterItem => filterItem.dataset.filterName);
             },
-            loadActualFilters(response) {
-                let currentFiltersList = this.getMultipleFilterValues();
-                let responseFilters = new DOMParser().parseFromString(response.listFilterOptions, 'text/html');
-                let responseFiltersContent = responseFilters.querySelectorAll('.filter-content  .filter-option')
+            async loadActualFilters(response) {
+                const currentFiltersList = this.getMultipleFilterValues();
+                const responseFilters = new DOMParser().parseFromString(response.listFilterOptions, 'text/html');
+                const responseFiltersContent = responseFilters.querySelectorAll('.filter-content .filter-option');
 
-                if (currentFiltersList.length < responseFiltersContent.length) {
-                    let filtredListContent = Array.from(responseFiltersContent).filter(function (item) {
-                        return currentFiltersList.lastIndexOf(item.dataset.filterName) == -1
-                    })
+                const filteredListContent = Array.from(responseFiltersContent).filter(item =>
+                    !currentFiltersList.includes(item.dataset.filterName)
+                );
 
-                    filtredListContent.forEach(item => {
-                        document.querySelector('.filter-content').append(item);
-                    })
-                }
+                const filterContent = document.querySelector('.filter-content');
+                filterContent.append(...filteredListContent);
             },
             reload() {
-                this.urlParams = new URLSearchParams(
-                    decodeURI(window.location.search).replace(/\[(\d*)\]/g, ''),
-                )
+                this.urlParams = this.getDecodedURLSearchParams();
+            },
+
+            getDecodedURLSearchParams() {
+                return new URLSearchParams(
+                    decodeURI(window.location.search).replace(/\[(\d*)\]/g, '')
+                );
             },
             buildUrl(url, replaceParam, replaceValue) {
                 if (replaceParam) {
-                    let href = new URL(url)
-                    href.searchParams.set(replaceParam, replaceValue)
-                    return href.toString()
-                } else {
-                    return url
+                    const href = new URL(url);
+                    href.searchParams.set(replaceParam, replaceValue);
+                    return href.toString();
                 }
+                return url;
             },
-            updateLayer(url, replaceParam, replaceValue) {
+            async updateLayer(url, replaceParam, replaceValue) {
                 this.isLoading = true;
                 try {
-                    let updatedUrl = this.buildUrl(url, replaceParam, replaceValue);
-
-                    updatedUrl = new URL(updatedUrl);
-                    updatedUrl.searchParams.append('_', Date.now())
-                    updatedUrl = updatedUrl.toString();
-
-                    fetch(updatedUrl, {
-                        'headers': {
-                            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        'method': 'GET',
-                        'mode': 'same-origin',
-                        'credentials': 'include'
-                    }).then(response => {
-                        if (response.ok) {
-                            return response.json();
-                        }
-                    }).then(result => {
-                        this.afterUpdateLayer(result, updatedUrl)
-                    });
+                    const updatedUrl = this.buildUrl(url, replaceParam, replaceValue);
+                    const result = await this.fetchLayerData(updatedUrl);
+                    await this.afterUpdateLayer(result, updatedUrl);
                 } catch (error) {
-                    this.isLoading = false;
-                    console.error(error)
+                    console.error(error);
                 } finally {
                     this.isLoading = false;
                 }
             },
-            afterUpdateLayer(response, updatedUrl) {
+            async fetchLayerData(url) {
+                const response = await fetch(url, {
+                    headers: {
+                        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    method: 'GET',
+                    mode: 'same-origin',
+                    credentials: 'include',
+                });
+
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Fetch failed');
+                }
+            },
+            async afterUpdateLayer(response, updatedUrl) {
                 try {
                     updatedUrl = new URL(updatedUrl);
                     updatedUrl.searchParams.delete('_');
@@ -125,76 +121,104 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
                     this.config.items.pageSize = response.pageSize;
                     this.config.items.curPage = response.curPage;
                     this.loadActualFilters(response);
-                    let responseActiveFilter = new DOMParser().parseFromString(response.activeFilter, 'text/html');
-                    responseActiveFilter = responseActiveFilter.querySelector('.filter-current');
-                    let activeFilter = document.querySelector('.filter-current');
-                    activeFilter.replaceWith(responseActiveFilter);
-
-                    let responseProductList = new DOMParser().parseFromString(response.productList, 'text/html');
-                    responseProductsList = responseProductList.querySelector('.products.wrapper');
-                    let productList = document.querySelector('.products.wrapper');
-                    productList.replaceWith(responseProductsList);
+                    const newActiveFilter = new DOMParser().parseFromString(response.activeFilter, 'text/html')
+                        .querySelector('.filter-current');
+                    const activeFilter = document.querySelector('.filter-current');
+                    activeFilter.replaceWith(newActiveFilter);
+                    const newProductList = new DOMParser().parseFromString(response.productList, 'text/html')
+                        .querySelector('.products.wrapper').children;
+                    const productList = document.querySelector('.products.wrapper');
+                    productList.replaceChildren(...newProductList);
                     this.isLoading = false;
                 } catch (error) {
-                    this.isLoading = false;
-                    console.error(error)
+                    console.error(error);
                 } finally {
                     this.isLoading = false;
                 }
             },
-            loadPage(url) {
+            async loadPage(url) {
                 this.isLoading = true;
                 try {
-                    url = new URL(url);
-                    url.searchParams.append('_', Date.now())
-                    url = url.toString();
-                    fetch(url, {
-                        'headers': {
-                            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        'method': 'GET',
-                        'mode': 'same-origin',
-                        'credentials': 'include'
-                    })
-                        .then(response => response.json())
-                        .then(result => {
-                            this.afterPageLoad(result, url);
-                        });
+                    const updatedUrl = this.processPageUrl(url);
+                    const result = await this.fetchPageData(updatedUrl);
+                    await this.afterPageLoad(result, updatedUrl);
                 } catch (error) {
-                    this.isLoading = false;
-                    console.error(error)
+                    console.error(error);
                 } finally {
                     this.isLoading = false;
                 }
-
             },
-            afterPageLoad(response, url) {
+            async fetchPageData(url) {
+                const response = await fetch(url, {
+                    headers: {
+                        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    method: 'GET',
+                    mode: 'same-origin',
+                    credentials: 'include',
+                });
+
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Fetch failed');
+                }
+            },
+            async afterPageLoad(response, url) {
+                this.isLoading = true;
                 try {
-                    url = new URL(url);
-                    url.searchParams.delete('_');
-                    url = url.toString();
-                    history.pushState({}, document.title, url);
-                    this.reload();
-                    this.config.items.filterItems = response.filterItems;
-                    this.config.items.activeFilter = response.activeFilter;
-                    this.config.items.size = response.size
-                    this.config.items.pageSize = response.pageSize
-                    this.config.items.curPage = response.curPage
-
-                    let responseProductList = new DOMParser().parseFromString(response.productList, 'text/html');
-                    responseProductsList = responseProductList.querySelector('.products.wrapper').children;
-
-                    let productList = document.querySelector('.products.wrapper');
-                    productList.append(...responseProductsList)
-                    this.isLoading = false;
+                    const newUrl = this.processPageUrl(url);
+                    await this.updatePageState(newUrl, response);
+                    await this.replaceFilterItems(response);
+                    await this.replaceActiveFilter(response);
+                    await this.replaceProductList(response);
                 } catch (error) {
-                    this.isLoading = false;
-                    console.error(error)
+                    console.error(error);
                 } finally {
                     this.isLoading = false;
                 }
             },
+            async updatePageState(newUrl, response) {
+                const updatedUrl = new URL(newUrl);
+                updatedUrl.searchParams.delete('_');
+                history.pushState({}, document.title, updatedUrl.toString());
+                this.reload();
+                this.config.items.filterItems = response.filterItems;
+                this.config.items.activeFilter = response.activeFilter;
+                this.config.items.size = response.size;
+                this.config.items.pageSize = response.pageSize;
+                this.config.items.curPage = response.curPage;
+            },
+            async replaceFilterItems(response) {
+                const currentFiltersList = this.getMultipleFilterValues();
+                const newFiltersContent = new DOMParser().parseFromString(response.listFilterOptions, 'text/html')
+                    .querySelectorAll('.filter-content .filter-option');
+
+                const filteredListContent = Array.from(newFiltersContent).filter(item => {
+                    return currentFiltersList.lastIndexOf(item.dataset.filterName) === -1;
+                });
+
+                if (filteredListContent.length > 0) {
+                    const filterContent = document.querySelector('.filter-content');
+                    filterContent.append(...filteredListContent);
+                }
+            },
+            async replaceActiveFilter(response) {
+                const newActiveFilter = new DOMParser().parseFromString(response.activeFilter, 'text/html')
+                    .querySelector('.filter-current');
+
+                const activeFilter = document.querySelector('.filter-current');
+                activeFilter.replaceWith(newActiveFilter);
+            },
+            async replaceProductList(response) {
+                const newProductList = new DOMParser().parseFromString(response.productList, 'text/html')
+                    .querySelector('.products.wrapper').children;
+
+                const productList = document.querySelector('.products.wrapper');
+                productList.append(...newProductList);
+            },
+
         })
     })
 </script>

@@ -62,7 +62,8 @@ $childBlockName = (strpos($dataRole, 'price') !== false) ? 'renderer.price.slide
     }
 </style>
 <div class="smile-es-range-slider" data-role="<?= $block->getDataRole(); ?>">
-    <div x-data="rangeSlider<?= $uniqueId ?>({})" x-init="initialize()" class="relative max-w-xl w-full">
+    <div x-data="rangeSlider<?= $uniqueId ?>({})" x-init="initialize()" @slider-update.window="setDefaultValues();"
+        class="relative max-w-xl w-full">
         <div class="flex justify-between items-center mb-8">
             <div>
                 <span x-model="minprice" x-text="fromLabel"

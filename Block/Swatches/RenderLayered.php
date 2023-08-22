@@ -11,8 +11,9 @@ namespace Shellpea\AdvancedElasticsuiteCatalog\Block\Swatches;
 
 use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
 use Magento\Eav\Model\Entity\Attribute\Option;
+use \Hyva\SmileElasticsuite\Block\SmileElasticsuiteSwatches\Navigation\Renderer\Swatches\RenderLayered as SmileRenderLayered;
 
-class RenderLayered extends \Hyva\SmileElasticsuite\Block\SmileElasticsuiteSwatches\Navigation\Renderer\Swatches\RenderLayered
+class RenderLayered extends SmileRenderLayered
 {
     /**
      * Path to template file.
