@@ -15,7 +15,7 @@ composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.0.0"
 ```
 ### Hyva Theme version >=1.2.0
 ```
-composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.2.2"
+composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.2.3"
 ```
 
 ## Admin Configurations
