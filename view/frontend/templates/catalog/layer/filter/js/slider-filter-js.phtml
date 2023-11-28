@@ -1,17 +1,22 @@
 <?php
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
 
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\Escaper;
+use Hyva\Theme\ViewModel\Currency;
 
+/** @var ViewModelRegistry $viewModels */
 /** @var Template $block */
 /** @var Escaper $escaper */
+/** @var Currency $viewModelCurrency */
+
 
 $uniqueId = $block->getData('unique_id');
 
-/** @var \Hyva\Theme\Model\ViewModelRegistry $viewModels */
-$storeViewModel = $viewModels->require(\Hyva\SmileElasticsuite\ViewModel\Store::class);
-/** @var \Hyva\SmileElasticsuite\ViewModel\Store $storeViewModel */
-$currencyCode = $storeViewModel ? $storeViewModel->getStore()->getCurrentCurrency()->getCode() : '';
+$viewModelCurrency = $viewModels->require(Currency::class);
+$currencyCode = $viewModelCurrency->getCurrentCurrencyCode();
 
 $isPriceSlider = (strpos($block->getDataRole(), 'price') !== false);
 ?>

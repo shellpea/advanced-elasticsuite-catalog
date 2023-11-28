@@ -31,13 +31,14 @@ $hideDetails = (bool) $block->getData('hideDetails');
 
 $productCollection = $block->getLoadedProductCollection();
 $actionName = $block->getRequest()->getFullActionName();
+
 if ($actionName == 'catalogsearch_result_index') {
     $productCollection = $block->getSearchCollection();
 }
 
 ?>
-<?php get_class($block->getSearchCollection()) ?>
-<?php if (!$productCollection->count()): ?>
+
+<?php if ($productCollection->count() === 0): ?>
     <div class="message info empty">
         <div>
             <?= $escaper->escapeHtml(__('We can\'t find products matching the selection.')) ?>
@@ -47,70 +48,43 @@ if ($actionName == 'catalogsearch_result_index') {
     <section class="py-8">
         <?= $block->getToolbarHtml() ?>
         <?= $block->getAdditionalHtml() ?>
+
         <?php
-        if ($block->getMode() == 'grid') {
-            $viewMode = 'grid';
-            $imageDisplayArea = 'category_page_grid';
-            $showDescription = false;
-            $templateType = \Magento\Catalog\Block\Product\ReviewRendererInterface::SHORT_VIEW;
-        } else {
-            $viewMode = 'list';
-            $imageDisplayArea = 'category_page_list';
-            $showDescription = true;
-            $templateType = \Magento\Catalog\Block\Product\ReviewRendererInterface::FULL_VIEW;
-        }
-        /**
-         * Position for actions regarding image size changing in vde if needed
-         */
+        $viewMode = $block->getMode() === 'grid' ? 'grid' : 'list';
+        $imageDisplayArea = $viewMode === 'grid' ? 'category_page_grid' : 'category_page_list';
+        $showDescription = $viewMode === 'list';
+        $templateType = $viewMode === 'grid'
+            ? \Magento\Catalog\Block\Product\ReviewRendererInterface::SHORT_VIEW
+            : \Magento\Catalog\Block\Product\ReviewRendererInterface::FULL_VIEW;
+
         $pos = $block->getPositioned();
         ?>
-        <div class="products wrapper mode-<?= /* @noEscape */$viewMode ?> products-<?= /* @noEscape */$viewMode ?>">
-            <div x-data="initProductCard()" class="mx-auto pt-4 pb-12 grid gap-4 grid-cols-1 <?= /* @noEscape */$viewMode === 'grid'
-                ? 'sm:grid-cols-2 xl:grid-cols-3'
-                : '' ?>">
-                <?php if ($actionName == 'catalog_category_view' && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
-                    <?php foreach ($block->getProductsFromPrevPages() as $product): ?>
-                        <?= $productListItemViewModel->getItemHtml(
-                            $product,
-                            $block,
-                            $viewMode,
-                            $templateType,
-                            $imageDisplayArea,
-                            $showDescription
-                        ) ?>
-                    <?php endforeach; ?>
-                <?php elseif ($actionName == 'catalogsearch_result_index' && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
-                    <?php foreach ($block->getProductsFromPrevPagesSearch() as $product): ?>
-                        <?= $productListItemViewModel->getItemHtml(
-                            $product,
-                            $block,
-                            $viewMode,
-                            $templateType,
-                            $imageDisplayArea,
-                            $showDescription
-                        ) ?>
+
+        <div class="products wrapper mode-<?= $viewMode ?> products-<?= $viewMode ?>">
+            <div x-data="initProductCard()"
+                class="mx-auto pt-4 pb-12 grid gap-4 grid-cols-1 <?= $viewMode === 'grid' ? 'sm:grid-cols-2 xl:grid-cols-3' : '' ?>">
+                <?php if (($actionName === 'catalog_category_view' || $actionName === 'catalogsearch_result_index') && $productCollection->getCurPage() > 1 && !$block->getRequest()->isAjax()): ?>
+                    <?php $productsFromPrevPages = $actionName === 'catalog_category_view' ? $block->getProductsFromPrevPages() : $block->getProductsFromPrevPagesSearch(); ?>
+                    <?php foreach ($productsFromPrevPages as $product): ?>
+                        <?= $productListItemViewModel->getItemHtml($product, $block, $viewMode, $templateType, $imageDisplayArea, $showDescription) ?>
                     <?php endforeach; ?>
                 <?php endif ?>
+
                 <?php /** @var \Magento\Catalog\Model\Product $product */?>
                 <?php foreach ($productCollection as $product): ?>
-                    <?= $productListItemViewModel->getItemHtml(
-                        $product,
-                        $block,
-                        $viewMode,
-                        $templateType,
-                        $imageDisplayArea,
-                        $showDescription
-                    ) ?>
+                    <?= $productListItemViewModel->getItemHtml($product, $block, $viewMode, $templateType, $imageDisplayArea, $showDescription) ?>
                 <?php endforeach; ?>
             </div>
         </div>
+
         <?= $block->getChildBlock('toolbar')->setIsBottom(true)->toHtml() ?>
     </section>
+
     <script>
         function initProductCard() {
             return {
                 addItemToCart(button) {
-                    let body = new URLSearchParams(new FormData(button.form))
+                    let body = new URLSearchParams(new FormData(button.form));
 
                     fetch(button.form.action, {
                         "headers": {

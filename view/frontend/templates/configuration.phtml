@@ -179,6 +179,11 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
                     this.isLoading = false;
                 }
             },
+            processPageUrl(url) {
+                const newUrl = new URL(url);
+                newUrl.searchParams.delete('_');
+                return newUrl.toString();
+            },
             async updatePageState(newUrl, response) {
                 const updatedUrl = new URL(newUrl);
                 updatedUrl.searchParams.delete('_');

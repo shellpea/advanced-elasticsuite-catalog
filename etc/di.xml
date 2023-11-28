@@ -4,6 +4,9 @@
         <plugin name="add_product_object_to_image_data_array" type="Smile\ElasticsuiteSwatches\Model\Plugin\ProductImage" />
     </type>
     <preference
+        for="Magento\Review\Block\Product\ReviewRenderer"
+        type="Shellpea\AdvancedElasticsuiteCatalog\Block\Product\ReviewRenderer" />
+    <preference
         for="Magento\Catalog\Block\Product\ListProduct"
         type="Shellpea\AdvancedElasticsuiteCatalog\Block\ListProduct" />
     <preference
