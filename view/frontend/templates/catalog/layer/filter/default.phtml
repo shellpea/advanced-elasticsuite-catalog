@@ -9,8 +9,7 @@ use Smile\ElasticsuiteCatalog\Block\Navigation\FilterRenderer;
 /** @var array $filterItems */
 /** @var Data $catalogHelper */
 
-
-$catalogHelper = $this->helper('\Magento\Catalog\Helper\Data');
+$catalogHelper = $this->helper(Data::class);
 $datascope = $block->getFilter()->getRequestVar() . 'Filter';
 ?>
 
