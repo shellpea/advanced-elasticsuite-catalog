@@ -84,7 +84,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         return parent::getCacheKeyInfo();
     }
 
-    public function getProductsFromPrevPages(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection | string
+    public function getProductsFromPrevPages(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
     {
         $curPageNumber = $this->getRequest()->getParam('p');
         if (!$this->getRequest()->isAjax() && $curPageNumber > 1) {
@@ -132,7 +132,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         );
     }
 
-    public function getOptionIdByLabel($attributeCode, $optionLabel): bool|string
+    public function getOptionIdByLabel(string $attributeCode, string $optionLabel): bool|string|null
     {
         try {
             return $this->attributeRepository->get(Product::ENTITY, $attributeCode)->getSource()->getOptionId($optionLabel);
