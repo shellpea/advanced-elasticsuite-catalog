@@ -12,8 +12,10 @@
     <body>
         <attribute name="class" value="page-with-filter"/>
         <referenceBlock name="content" >
-            <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog" name="shellpea.elastic.navigation"
-                   template="Shellpea_AdvancedElasticsuiteCatalog::configuration.phtml" ifconfig="smile_advanced_elasticsuite_catalog/general/active" />
+            <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog"
+                   name="shellpea.elastic.navigation"
+                   template="Shellpea_AdvancedElasticsuiteCatalog::configuration.phtml"
+                   ifconfig="smile_advanced_elasticsuite_catalog/general/active" />
         </referenceBlock>
         <referenceContainer name="sidebar.main">
             <referenceBlock name="catalog.leftnav"

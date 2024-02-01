@@ -25,7 +25,7 @@ class RenderLayered extends SmileRenderLayered
     /**
      * {@inheritDoc}
      */
-    protected function getOptionViewData(FilterItem $filterItem, Option $swatchOption)
+    protected function getOptionViewData(FilterItem $filterItem, Option $swatchOption): array
     {
         $dataView = parent::getOptionViewData($filterItem, $swatchOption);
 

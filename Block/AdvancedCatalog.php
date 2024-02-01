@@ -126,7 +126,7 @@ class AdvancedCatalog extends Template
     /**
      * {@inheritDoc}
      */
-    protected function getOptionViewData(FilterItem $filterItem)
+    protected function getOptionViewData(FilterItem $filterItem): array
     {
         $customStyle = '';
 
@@ -156,7 +156,7 @@ class AdvancedCatalog extends Template
      *
      * @return bool
      */
-    protected function isOptionVisible(FilterItem $filterItem, $attribute)
+    protected function isOptionVisible(FilterItem $filterItem, $attribute): bool
     {
         return !($this->isOptionDisabled($filterItem) && $this->isShowEmptyResults($attribute));
     }
@@ -166,7 +166,7 @@ class AdvancedCatalog extends Template
      *
      * @return bool
      */
-    protected function isShowEmptyResults($attribute)
+    protected function isShowEmptyResults($attribute): bool
     {
         return $attribute->getIsFilterable() != '1';
     }
@@ -178,7 +178,7 @@ class AdvancedCatalog extends Template
      *
      * @return bool
      */
-    protected function isOptionDisabled(FilterItem $filterItem)
+    protected function isOptionDisabled(FilterItem $filterItem): bool
     {
         return !$filterItem->getCount();
     }
@@ -190,7 +190,7 @@ class AdvancedCatalog extends Template
      *
      * @return array
      */
-    protected function getUnusedOption(FilterItem $filterItem)
+    protected function getUnusedOption(FilterItem $filterItem): array
     {
         return [
             'label' => $filterItem->getLabel(),
@@ -212,7 +212,7 @@ class AdvancedCatalog extends Template
     /**
      * Get active filters
      *
-     * @return string[]
+     * @return string
      */
     protected function getActiveFilters(): string
     {
@@ -232,7 +232,7 @@ class AdvancedCatalog extends Template
      *
      * @return string
      */
-    protected function getNavBlock()
+    protected function getNavBlock(): string
     {
         if ($this->isSearch()) {
             $navBlock = 'catalogsearch.leftnav';
@@ -250,7 +250,7 @@ class AdvancedCatalog extends Template
      *
      * @return boolean
      */
-    private function isSearch()
+    private function isSearch(): bool
     {
         return (bool) ($this->getRequest()->getParam('q') !== null);
     }

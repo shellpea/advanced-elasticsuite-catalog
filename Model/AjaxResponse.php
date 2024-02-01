@@ -22,13 +22,13 @@ class AjaxResponse
      *
      * @var string $productListBlock
      */
-    protected $productListBlock = '';
+    protected ?string $productListBlock = null;
     /**
      * Left nav block
      *
      * @var string $leftNavBlock
      */
-    protected $leftNavBlock = '';
+    protected ?string $leftNavBlock = null;
     /**
      * Result json factory
      *
@@ -118,7 +118,7 @@ class AjaxResponse
      *
      * @return bool
      */
-    protected function isOptionVisible(FilterItem $filterItem, $attribute)
+    protected function isOptionVisible(FilterItem $filterItem, $attribute): bool
     {
         return !($this->isOptionDisabled($filterItem) && $this->isShowEmptyResults($attribute));
     }
@@ -128,7 +128,7 @@ class AjaxResponse
      *
      * @return bool
      */
-    protected function isShowEmptyResults($attribute)
+    protected function isShowEmptyResults($attribute): bool
     {
         return $attribute->getIsFilterable() != '1';
     }
@@ -140,7 +140,7 @@ class AjaxResponse
      *
      * @return bool
      */
-    protected function isOptionDisabled(FilterItem $filterItem)
+    protected function isOptionDisabled(FilterItem $filterItem): bool
     {
         return !$filterItem->getCount();
     }
@@ -152,7 +152,7 @@ class AjaxResponse
      *
      * @return array
      */
-    protected function getUnusedOption(FilterItem $filterItem)
+    protected function getUnusedOption(FilterItem $filterItem): array
     {
         return [
             'label' => $filterItem->getLabel(),
@@ -164,7 +164,7 @@ class AjaxResponse
     /**
      * {@inheritDoc}
      */
-    protected function getOptionViewData(FilterItem $filterItem)
+    protected function getOptionViewData(FilterItem $filterItem): array
     {
         $customStyle = '';
 
@@ -193,61 +193,108 @@ class AjaxResponse
      */
     public function getFilterItems(string $navBlock): array
     {
-        /** @var Navigation $leftNavBlock */
         $leftNavBlock = $this->layout->getBlock($navBlock);
         $items = [];
-        $swatchData = [];
-        /** @var mixed[] $filters */
-        $filters = $leftNavBlock->getFilters();
-        foreach ($filters as $filter) {
-            $datascope = $filter->getRequestVar() . 'Filter';
-            if ($filter instanceof Attribute) {
-                $items[$datascope] = [];
-                $attribute = $filter->getAttributeModel();
-                if ($this->swatchHelper->isSwatchAttribute($attribute)) {
-                    foreach ($filter->getItems() as $item) {
-                        $resultOption = false;
-                        if ($this->isShowEmptyResults($attribute)) {
-                            $resultOption = $this->getUnusedOption($item);
-                        } elseif ($item && $this->isOptionVisible($item, $attribute)) {
-                            $resultOption = $this->getOptionViewData($item);
-                        }
-                        $attributeOptionId = $this->swatchHelper->getOptionIds($attribute, $item['label']);
-                        $swatchData = $this->swatchHelper->getSwatchesByOptionsId($attributeOptionId);
-                        $swatchThumbPath = $this->mediaHelper->getSwatchAttributeImage('swatch_thumb', $swatchData[$attributeOptionId[0]]['value']);
-                        $swatchImagePath = $this->mediaHelper->getSwatchAttributeImage('swatch_image', $swatchData[$attributeOptionId[0]]['value']);
-                        $items[$datascope][] = [
-                            'label' => $item->getLabel(),
-                            'count' => $item->getCount(),
-                            'url' => $item->getUrl(),
-                            'is_selected' => $item->getIsSelected(),
-                            'option_id' => $attributeOptionId[0],
-                            'option' => $resultOption,
-                            'swatch' => $swatchData,
-                            'swatch_thumb' => $swatchThumbPath,
-                            'swatch_image' => $swatchImagePath
-                        ];
-                    }
-                } else {
-                    foreach ($filter->getItems() as $item) {
-                        $items[$datascope][] = $item->toArray(['label', 'count', 'url', 'is_selected']);
-                    }
-                }
-            } else {
-                $items[$datascope] = [];
-                foreach ($filter->getItems() as $item) {
-                    $items[$datascope][] = [
-                        'label' => $item->getLabel(),
-                        'count' => $item->getCount(),
-                        'url' => $item->getUrl(),
-                    ];
-                }
-            }
 
+        $filters = $leftNavBlock->getFilters();
+
+        foreach ($filters as $filter) {
+            $items += $this->processFilter($filter);
         }
 
         return $items;
     }
+
+    private function processFilter($filter): array
+    {
+        $items = [];
+        $datascope = $filter->getRequestVar() . 'Filter';
+
+        if ($filter instanceof Attribute) {
+            $items[$datascope] = $this->processAttributeFilter($filter);
+        } else {
+            $items[$datascope] = $this->processNonAttributeFilter($filter);
+        }
+
+        return $items;
+    }
+
+    private function processAttributeFilter($filter): array
+    {
+        $items = [];
+        $attribute = $filter->getAttributeModel();
+
+        if ($this->swatchHelper->isSwatchAttribute($attribute)) {
+            $items = $this->processSwatchAttributeFilter($filter, $attribute);
+        } else {
+            $items = $this->processNonSwatchAttributeFilter($filter);
+        }
+
+        return $items;
+    }
+    private function processSwatchAttributeFilter($filter, $attribute): array
+    {
+        $items = [];
+
+        foreach ($filter->getItems() as $item) {
+            $resultOption = $this->getResultOption($item, $attribute);
+            $attributeOptionId = $this->swatchHelper->getOptionIds($attribute, $item['label']);
+            $swatchData = $this->swatchHelper->getSwatchesByOptionsId($attributeOptionId);
+            $swatchThumbPath = $this->mediaHelper->getSwatchAttributeImage('swatch_thumb', $swatchData[$attributeOptionId[0]]['value']);
+            $swatchImagePath = $this->mediaHelper->getSwatchAttributeImage('swatch_image', $swatchData[$attributeOptionId[0]]['value']);
+            $items[] = [
+                'label' => $item->getLabel(),
+                'count' => $item->getCount(),
+                'url' => $item->getUrl(),
+                'is_selected' => $item->getIsSelected(),
+                'option_id' => $attributeOptionId[0],
+                'option' => $resultOption,
+                'swatch' => $swatchData,
+                'swatch_thumb' => $swatchThumbPath,
+                'swatch_image' => $swatchImagePath
+            ];
+        }
+
+        return $items;
+    }
+
+    private function processNonSwatchAttributeFilter($filter): array
+    {
+        $items = [];
+
+        foreach ($filter->getItems() as $item) {
+            $items[] = $item->toArray(['label', 'count', 'url', 'is_selected']);
+        }
+
+        return $items;
+    }
+
+    private function processNonAttributeFilter($filter): array
+    {
+        $items = [];
+
+        foreach ($filter->getItems() as $item) {
+            $items[] = [
+                'label' => $item->getLabel(),
+                'count' => $item->getCount(),
+                'url' => $item->getUrl(),
+            ];
+        }
+
+        return $items;
+    }
+
+    private function getResultOption($item, $attribute): array|bool
+    {
+        if ($this->isShowEmptyResults($attribute)) {
+            return $this->getUnusedOption($item);
+        } elseif ($item && $this->isOptionVisible($item, $attribute)) {
+            return $this->getOptionViewData($item);
+        }
+
+        return false;
+    }
+
 
     /**
      * Set product list block

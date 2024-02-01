@@ -27,7 +27,9 @@
                            template="Magento_Catalog::product/options/options.phtml">
                     </block>
                     <referenceBlock class="Magento\Catalog\Block\Product\ProductList\Toolbar" name="product_list_toolbar" template="Shellpea_AdvancedElasticsuiteCatalog::product/list/toolbar.phtml">
-                        <referenceBlock class="Magento\Theme\Block\Html\Pager" name="product_list_toolbar_pager" template="Shellpea_AdvancedElasticsuiteCatalog::pager/pager.phtml">
+                        <referenceBlock class="Magento\Theme\Block\Html\Pager"
+                                        name="product_list_toolbar_pager"
+                                        template="Shellpea_AdvancedElasticsuiteCatalog::pager/pager.phtml">
                         </referenceBlock>
                     </referenceBlock>
                     <action method="setToolbarBlockName">
