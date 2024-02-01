@@ -20,12 +20,16 @@
         </referenceBlock>
         <referenceContainer name="content">
             <referenceBlock class="Magento\Catalog\Block\Product\ProductList\Toolbar" name="product_list_toolbar" template="Shellpea_AdvancedElasticsuiteCatalog::product/list/toolbar.phtml">
-                <referenceBlock class="Magento\Theme\Block\Html\Pager" name="product_list_toolbar_pager" template="Shellpea_AdvancedElasticsuiteCatalog::pager/pager.phtml">
-                </referenceBlock>
+                <referenceBlock class="Magento\Theme\Block\Html\Pager"
+                                name="product_list_toolbar_pager"
+                                template="Shellpea_AdvancedElasticsuiteCatalog::pager/pager.phtml"
+                />
             </referenceBlock>
             <container name="category.list.view" htmlTag="div" htmlClass="category-list-view" />
-            <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog" name="shellpea.elastic.navigation"
-                   template="Shellpea_AdvancedElasticsuiteCatalog::configuration.phtml" ifconfig="smile_advanced_elasticsuite_catalog/general/active" />
+            <block class="Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog"
+                   name="shellpea.elastic.navigation"
+                   template="Shellpea_AdvancedElasticsuiteCatalog::configuration.phtml"
+                   ifconfig="smile_advanced_elasticsuite_catalog/general/active" />
         </referenceContainer>
 
         <referenceContainer name="sidebar.main">

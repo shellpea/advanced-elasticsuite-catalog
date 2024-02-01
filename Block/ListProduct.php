@@ -79,12 +79,12 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         );
     }
 
-    public function getCacheKeyInfo()
+    public function getCacheKeyInfo(): array
     {
         return parent::getCacheKeyInfo();
     }
 
-    public function getProductsFromPrevPages()
+    public function getProductsFromPrevPages(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection | string
     {
         $curPageNumber = $this->getRequest()->getParam('p');
         if (!$this->getRequest()->isAjax() && $curPageNumber > 1) {
@@ -113,9 +113,10 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
 
             return $prevProductCollection;
         }
+        return '';
     }
 
-    public function getPageSize()
+    public function getPageSize(): int
     {
         return $this->scopeConfig->getValue(
             'catalog/frontend/grid_per_page',
@@ -123,7 +124,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         );
     }
 
-    public function isInfinityActive()
+    public function isInfinityActive(): bool
     {
         return $this->scopeConfig->getValue(
             Config::INFINITE_ACTIVE,
@@ -131,7 +132,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         );
     }
 
-    public function getOptionIdByLabel($attributeCode, $optionLabel)
+    public function getOptionIdByLabel($attributeCode, $optionLabel): bool|string
     {
         try {
             return $this->attributeRepository->get(Product::ENTITY, $attributeCode)->getSource()->getOptionId($optionLabel);
@@ -140,7 +141,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         }
     }
 
-    public function getProductsFromPrevPagesSearch()
+    public function getProductsFromPrevPagesSearch(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
     {
         $curPageNumber = $this->getRequest()->getParam('p');
         if (!$this->getRequest()->isAjax() && $curPageNumber > 1) {
@@ -150,9 +151,10 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
 
             return $prevProductCollection;
         }
+        return '';
     }
 
-    public function getSearchCollection()
+    public function getSearchCollection(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection
     {
         /** @var \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection $searchCollection */
         $searchCollection = $this->productCollectionFactory->create();

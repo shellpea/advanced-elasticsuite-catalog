@@ -5,6 +5,7 @@
  * This product is licensed per Magento install
  * See https://hyva.io/license
  */
+declare(strict_types=1);
 
 use Hyva\Theme\Model\LocaleFormatter;
 use Hyva\Theme\Model\ViewModelRegistry;
@@ -24,6 +25,7 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
 /** @var StoreConfig $storeConfig */
 $storeConfig = $viewModels->require(StoreConfig::class);
 
+/** @var bool $isEnableInfinite */
 $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_catalog/infinite_scroll/active');
 
 $paginationUrlAnchor = $block->hasData('pagination_url_anchor')
@@ -43,10 +45,33 @@ $pagerItemBtnClass = $pagerItemClass
         <div class="grid items-center grid-flow-row grid-cols-4 gap-2 pager
             sm:grid-cols-8 md:grid-cols-4 lg:grid-cols-8">
     <?php endif; ?>
-    <?php if ($isEnableInfinite == false): ?>
-    <?php if ($block->getShowAmounts() && $isEnableInfinite == false): ?>
+    <?php if ($isEnableInfinite): ?>
+        <span class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
+            toolbar-amount sm:order-2 md:order-3 lg:order-2 gap-x-1" x-text="$store.category.sentence"></span>
+        <div x-data class="flex flex-col items-center justify-center order-2 col-span-4" >
+            <button type="button" class="btn btn-primary justify-center text-sm flex"
+                :class="{'hidden': $store.category.isHidden}"
+                @click.prevent="$store.category.loadPage($event.target.dataset.link)"
+
+                :data-link="$store.category.currentUrl"
+            >
+            <template x-if="$store.category.isLoading">
+                <div class="flex gap-2 text-sm justify-center items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 animate-spin pointer-events-none">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12" />
+                    </svg>
+                    <span><?= $escaper->escapeHtml(__('Loading')) ?></span>
+                </div>
+            </template>
+            <template x-if="!$store.category.isLoading">
+                <span class="pointer-events-none" x-text="$store.category.config.infinite.buttonLabel"></span>
+            </template>
+            </button>
+        </div>
+    <?php else: ?>
+    <?php if ($block->getShowAmounts()): ?>
         <p class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
-                toolbar-amount1 sm:order-2 md:order-3 lg:order-2 gap-x-1">
+                toolbar-amount sm:order-2 md:order-3 lg:order-2 gap-x-1">
             <span class="toolbar-number">
             <?php if ($block->getLastPageNum() > 1): ?>
                 <?= $escaper->escapeHtml(
@@ -65,20 +90,7 @@ $pagerItemBtnClass = $pagerItemClass
             </span>
         </p>
     <?php endif; ?>
-    <?php endif; ?>
-    <?php if ($isEnableInfinite): ?>
-        <span class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
-            toolbar-amount sm:order-2 md:order-3 lg:order-2 gap-x-1" x-text="$store.category.sentence"></span>
-        <div x-data class="flex flex-col items-center justify-center order-2 col-span-4" >
-            <a class="btn btn-primary justify-center text-sm flex" :class="{'hidden': $store.category.isHidden}"
-                @click.prevent="$store.category.loadPage($event.target.href)"
-                x-text="$store.category.config.infinite.buttonLabel"
-                :href="$store.category.currentUrl"
-            >
-            </a>
-        </div>
-    <?php endif; ?>
-    <?php if(!$isEnableInfinite): ?>
+
     <div class="flex justify-center order-2 col-span-4">
         <?php if ($block->getLastPageNum() > 1): ?>
             <nav class="inline-flex items-center pages" aria-label="pagination">
