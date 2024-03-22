@@ -84,6 +84,11 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         return parent::getCacheKeyInfo();
     }
 
+    /**
+     * Get products from previous pages based on current page number.
+     *
+     * @return \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
+     */
     public function getProductsFromPrevPages(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
     {
         $curPageNumber = $this->getRequest()->getParam('p');
@@ -132,6 +137,14 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         );
     }
 
+    /**
+     * Retrieves the option ID for a given attribute code and option label.
+     *
+     * @param string $attributeCode The code of the attribute.
+     * @param string $optionLabel The label of the option.
+     * @throws \Magento\Framework\Exception\NoSuchEntityException If the option label does not exist.
+     * @return bool|string|null The option ID if found, false if not found, or null if an exception is caught.
+     */
     public function getOptionIdByLabel(string $attributeCode, string $optionLabel): bool|string|null
     {
         try {
@@ -141,44 +154,63 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
         }
     }
 
+    /**
+     * Retrieves the products from the previous pages of a search.
+     *
+     * This function checks the current page number and if it is greater than 1, it retrieves the search collection
+     * and sets the current page to the previous page number. It also sets the page size based on the current page
+     * number and the page size.
+     *
+     * @return \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
+     * The search collection for the previous page or an empty string if the current page is 1.
+     */
     public function getProductsFromPrevPagesSearch(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
     {
-        $curPageNumber = $this->getRequest()->getParam('p');
-        if (!$this->getRequest()->isAjax() && $curPageNumber > 1) {
-            $prevProductCollection = $this->getSearchCollection();
-            $prevProductCollection->setCurPage($curPageNumber - 1);
-            $prevProductCollection->setPageSize($this->getPageSize() * ($curPageNumber - 1));
+        $currentPage = (int) $this->getRequest()->getParam('p', 1);
+        if ($currentPage > 1) {
+            $collection = $this->getSearchCollection();
+            $collection->setCurPage($currentPage - 1)
+                ->setPageSize($this->getPageSize() * ($currentPage - 1));
 
-            return $prevProductCollection;
+            return $collection;
         }
         return '';
     }
 
+    /**
+     * Get the search collection.
+     *
+     * @return \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection
+     */
     public function getSearchCollection(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection
     {
-        /** @var \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection $searchCollection */
-        $searchCollection = $this->productCollectionFactory->create();
-        $searchCollection->addAttributeToSelect('*');
-        $searchCollection->setSearchQuery($this->getRequest()->getParam('q'));
+        $collection = $this->productCollectionFactory->create();
+        $collection->addAttributeToSelect('*')
+            ->setSearchQuery($this->getRequest()->getParam('q'))
+            ->setPageSize($this->getPageSize())
+            ->setCurPage($this->getRequest()->getParam('p'));
 
-        foreach ($this->getRequest()->getParams() as $attributeCode => $optionLabel) {
-            if (is_array($optionLabel)) {
-                foreach ($optionLabel as $optionLabel) {
-                    if ($optionId = $this->getOptionIdByLabel($attributeCode, $optionLabel)) {
-                        $searchCollection->addFieldToFilter($attributeCode, $optionId);
-                    }
-                }
-            } else {
+        $sortBy = $this->getRequest()->getParam('product_list_order');
+        if ($sortBy === 'relevance') {
+            $collection->setOrder('entity_id', 'DESC');
+        } elseif ($sortBy === 'price') {
+            $collection->setOrder('price_index.price', 'ASC');
+        } else {
+            $collection->setOrder($sortBy, 'ASC');
+        }
+
+        foreach ($this->getRequest()->getParams() as $attributeCode => $optionLabels) {
+            if (!is_array($optionLabels)) {
+                $optionLabels = [$optionLabels];
+            }
+
+            foreach ($optionLabels as $optionLabel) {
                 if ($optionId = $this->getOptionIdByLabel($attributeCode, $optionLabel)) {
-                    $searchCollection->addFieldToFilter($attributeCode, $optionId);
+                    $collection->addFieldToFilter($attributeCode, $optionId);
                 }
             }
         }
 
-        $searchCollection->setPageSize($this->getPageSize());
-        $searchCollection->setCurPage($this->getRequest()->getParam('p'));
-        $searchCollection->addOrder('entity_id', 'desc');
-
-        return $searchCollection;
+        return $collection;
     }
 }
