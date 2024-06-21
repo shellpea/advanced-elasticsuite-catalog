@@ -147,11 +147,12 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                         .querySelector('.filter-current');
                     const activeFilter = document.querySelector('.filter-current');
                     activeFilter.replaceWith(newActiveFilter);
-                    await this.replaceSliderFilters(response);
                     const newProductList = new DOMParser().parseFromString(response.productList, 'text/html')
                         .querySelector('.products.wrapper').children;
                     const productList = document.querySelector('.products.wrapper');
                     productList.replaceChildren(...newProductList);
+                    await this.replaceSliderFilters(response);
+
                     this.isLoading = false;
                 } catch (error) {
                     console.error(error);
@@ -205,9 +206,6 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                 try {
                     const newUrl = this.processPageUrl(url);
                     await this.updatePageState(newUrl, response);
-                    await this.replaceFilterItems(response);
-                    await this.replaceActiveFilter(response);
-                    await this.replaceSliderFilters(response);
                     await this.replaceProductList(response);
                 } catch (error) {
                     console.error(error);
@@ -220,9 +218,6 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                 try {
                     const newUrl = this.processPageUrl(url);
                     await this.updatePageState(newUrl, response);
-                    await this.replaceFilterItems(response);
-                    await this.replaceActiveFilter(response);
-                    await this.replaceSliderFilters(response);
                     const newPagination = new DOMParser().parseFromString(response.productList, 'text/html').querySelector('[aria-label=pagination]');
                     const pagination = document.querySelector('[aria-label=pagination]');
                     if (pagination) {
