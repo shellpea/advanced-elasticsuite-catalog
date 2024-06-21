@@ -58,6 +58,11 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
             get currentUrl() {
                 return this.buildUrl(this.current_href, 'p', parseInt(this.config.items.curPage) + 1);
             },
+            getSliderFilterValues () {
+                return Array.from(document.querySelectorAll('.filter-content .filter-option'))
+                    .filter(item => item.querySelector('.smile-es-range-slider'))
+                    .map(filterItem => filterItem.dataset.filterName);
+            },
             getMultipleFilterValues() {
                 return Array.from(document.querySelectorAll('.filter-content .filter-option'))
                     .map(filterItem => filterItem.dataset.filterName);
@@ -142,6 +147,7 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                         .querySelector('.filter-current');
                     const activeFilter = document.querySelector('.filter-current');
                     activeFilter.replaceWith(newActiveFilter);
+                    await this.replaceSliderFilters(response);
                     const newProductList = new DOMParser().parseFromString(response.productList, 'text/html')
                         .querySelector('.products.wrapper').children;
                     const productList = document.querySelector('.products.wrapper');
@@ -201,6 +207,7 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                     await this.updatePageState(newUrl, response);
                     await this.replaceFilterItems(response);
                     await this.replaceActiveFilter(response);
+                    await this.replaceSliderFilters(response);
                     await this.replaceProductList(response);
                 } catch (error) {
                     console.error(error);
@@ -215,6 +222,7 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                     await this.updatePageState(newUrl, response);
                     await this.replaceFilterItems(response);
                     await this.replaceActiveFilter(response);
+                    await this.replaceSliderFilters(response);
                     const newPagination = new DOMParser().parseFromString(response.productList, 'text/html').querySelector('[aria-label=pagination]');
                     const pagination = document.querySelector('[aria-label=pagination]');
                     if (pagination) {
@@ -246,8 +254,27 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
                 this.config.items.pageSize = response.pageSize;
                 this.config.items.curPage = response.curPage;
             },
+            async replaceSliderFilters(response) {
+               const sliderItems = this.getSliderFilterValues();
+
+               if (sliderItems.length > 0) {
+
+                const newSlidersContent = new DOMParser().parseFromString(response.listFilterOptions, 'text/html')
+                    .querySelectorAll('.filter-content .filter-option');
+
+                const filteredItems = Array.from(newSlidersContent)
+                    .filter(item => sliderItems.includes(item.dataset.filterName));
+                console.log(filteredItems);
+                filteredItems.map(item => {
+                    const slider = document.querySelector(`[data-filter-name=${item.dataset.filterName}]`)
+                    slider.replaceWith(item);
+                });
+               }
+            },
             async replaceFilterItems(response) {
                 const currentFiltersList = this.getMultipleFilterValues();
+                console.log(currentFiltersList);
+
                 const newFiltersContent = new DOMParser().parseFromString(response.listFilterOptions, 'text/html')
                     .querySelectorAll('.filter-content .filter-option');
 
