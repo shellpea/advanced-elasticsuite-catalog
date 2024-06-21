@@ -44,7 +44,7 @@ use Magento\LayeredNavigation\Block\Navigation;
                     $datascope = $filter->getRequestVar() . 'Filter';
                     ?>
                     <div class="filter-option card my-4"
-                        data-filter-name="<?= $escaper->escapeHtmlAttr(__($filter->getRequestVar() . 'Filter')) ?>"
+                        data-filter-name="<?= $escaper->escapeHtmlAttr(__($datascope)) ?>"
                         :class="{'hidden': !$store.category.config.items.filterItems.<?= $datascope ?>.length && !$store.category.hasMoreItems.<?= $datascope ?>}"
                         x-data="{ open: <?= $showOpen ? 'true' : 'false' ?> }">
                         <div class="filter-options-title flex justify-between items-center cursor-pointer hover:text-secondary-darker border-container"

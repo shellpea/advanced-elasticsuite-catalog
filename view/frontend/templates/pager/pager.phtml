@@ -45,9 +45,9 @@ $pagerItemBtnClass = $pagerItemClass
         <div class="grid items-center grid-flow-row grid-cols-4 gap-2 pager
             sm:grid-cols-8 md:grid-cols-4 lg:grid-cols-8">
     <?php endif; ?>
-    <?php if ($isEnableInfinite): ?>
         <span class="flex order-3 col-span-2 text-sm leading-5 text-gray-700
             toolbar-amount sm:order-2 md:order-3 lg:order-2 gap-x-1" x-text="$store.category.sentence"></span>
+    <?php if ($isEnableInfinite): ?>
         <div x-data class="flex flex-col items-center justify-center order-2 col-span-4" >
             <button type="button" class="btn btn-primary justify-center text-sm flex"
                 :class="{'hidden': $store.category.isHidden}"
@@ -100,16 +100,18 @@ $pagerItemBtnClass = $pagerItemClass
                         <?php if (!$block->isFirstPage()): ?>
                             <a
                                 href="<?= $escaper->escapeUrl($block->getPreviousPageUrl()) . /* @noEscape */ $paginationUrlAnchor ?>"
+                                @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                 class="<?= $escaper->escapeHtmlAttr($text ? 'link ' : 'action ') ?>
                                     <?= /* @noEscape */ $pagerItemBtnClass ?> rounded-l-md px-3 py-2 text-gray-500"
                             >
                                 <?php if ($text): ?>
                                     <span class="sr-only label"><?= $escaper->escapeHtml(__('Page')) ?></span>
-                                    <span><?= $escaper->escapeHtml($text) ?></span>
+                                    <span class="pointer-events-none"><?= $escaper->escapeHtml($text) ?></span>
                                 <?php else: ?>
                                     <span
+                                        class="pointer-events-none"
                                         aria-label="<?= $escaper->escapeHtml(__('Previous')) ?>"
-                                    ><?= $heroicons->chevronLeftHtml('', 20, 20); ?></span>
+                                    ><?= $heroicons->chevronLeftHtml('pointer-events-none', 20, 20); ?></span>
                                 <?php endif; ?>
                             </a>
                         <?php else: ?>
@@ -132,10 +134,11 @@ $pagerItemBtnClass = $pagerItemClass
                         >
                             <a
                                 href="<?= $escaper->escapeUrl($block->getFirstPageUrl()) . /* @noEscape */ $paginationUrlAnchor ?>"
+                                @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                 class="page first <?= /* @noEscape */ $pagerItemBtnClass ?> px-4 py-2 text-gray-500"
                             >
                                 <span class="sr-only label"><?= $escaper->escapeHtml(__('Page')) ?></span>
-                                <span><?= $escaper->escapeHtml($localeFormatter->formatNumber(1)) ?></span>
+                                <span class="pointer-events-none"><?= $escaper->escapeHtml($localeFormatter->formatNumber(1)) ?></span>
                             </a>
                         </li>
                     <?php endif; ?>
@@ -144,6 +147,7 @@ $pagerItemBtnClass = $pagerItemClass
                         <li class="item -ml-px">
                             <a
                                 href="<?= $escaper->escapeUrl($block->getPreviousJumpUrl()) . /* @noEscape */ $paginationUrlAnchor ?>"
+                                @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                 class="page previous jump <?= /* @noEscape */ $pagerItemBtnClass ?> text-gray-700 px-4
                                  py-2"
                                 aria-label="<?= $escaper->escapeHtmlAttr(__(
@@ -151,7 +155,7 @@ $pagerItemBtnClass = $pagerItemClass
                                     $localeFormatter->formatNumber($block->getPreviousJumpPage())
                                 )) ?>"
                             >
-                            <span aria-label="<?= $escaper->escapeHtml(__('Jump backward')) ?>">...</span>
+                            <span class="pointer-events-none" aria-label="<?= $escaper->escapeHtml(__('Jump backward')) ?>">...</span>
                             </a>
                         </li>
                     <?php endif; ?>
@@ -164,6 +168,7 @@ $pagerItemBtnClass = $pagerItemClass
                             >
                                 <a
                                     href="<?= $escaper->escapeUrl($block->getPageUrl($page)) . /* @noEscape */ /* @noEscape *//* @noEscape *//* @noEscape *//* @noEscape */    $paginationUrlAnchor ?>"
+                                    @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                     class="page <?= /* @noEscape */ $pagerItemBtnClass ?> z-10 px-4 py-2 text-gray-700
                                      bg-gray-100 border-primary"
                                     aria-current="page"
@@ -173,7 +178,7 @@ $pagerItemBtnClass = $pagerItemClass
                                             __('You\'re currently reading page')
                                         ) ?>
                                     </span>
-                                    <span><?= $escaper->escapeHtml($localeFormatter->formatNumber($page)) ?></span>
+                                    <span class="pointer-events-none"><?= $escaper->escapeHtml($localeFormatter->formatNumber($page)) ?></span>
                                 </a>
                             </li>
                         <?php else: ?>
@@ -183,10 +188,11 @@ $pagerItemBtnClass = $pagerItemClass
                             >
                                 <a
                                     href="<?= $escaper->escapeUrl($block->getPageUrl($page)) . /* @noEscape */ /* @noEscape *//* @noEscape *//* @noEscape */   $paginationUrlAnchor ?>"
+                                    @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                     class="page <?= /* @noEscape */ $pagerItemBtnClass ?> px-4 py-2 text-gray-700"
                                 >
                                     <span class="sr-only label"><?= $escaper->escapeHtml(__('Page')) ?></span>
-                                    <span><?= $escaper->escapeHtml($localeFormatter->formatNumber($page)) ?></span>
+                                    <span class="pointer-events-none"><?= $escaper->escapeHtml($localeFormatter->formatNumber($page)) ?></span>
                                 </a>
                             </li>
                         <?php endif; ?>
@@ -196,13 +202,14 @@ $pagerItemBtnClass = $pagerItemClass
                         <li class="item -ml-px">
                             <a
                                 href="<?= $escaper->escapeUrl($block->getNextJumpUrl()) . /* @noEscape */ /* @noEscape *//* @noEscape */  $paginationUrlAnchor ?>"
+                                @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                 class="page next jump <?= /* @noEscape */ $pagerItemBtnClass ?> px-4 py-2 text-gray-700"
                                 aria-label="<?= $escaper->escapeHtmlAttr(__(
                                     'Skip to page %1',
                                     $localeFormatter->formatNumber($block->getNextJumpPage())
                                 )) ?>"
                             >
-                                <span aria-label="<?= $escaper->escapeHtml(__('Jump forward')) ?>">...</span>
+                                <span class="pointer-events-none" aria-label="<?= $escaper->escapeHtml(__('Jump forward')) ?>">...</span>
                             </a>
                         </li>
                     <?php endif; ?>
@@ -214,10 +221,11 @@ $pagerItemBtnClass = $pagerItemClass
                         >
                             <a
                                 href="<?= $escaper->escapeUrl($block->getLastPageUrl()) . /* @noEscape */ /* @noEscape */ $paginationUrlAnchor ?>"
+                                @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                 class="page last <?= /* @noEscape */ $pagerItemBtnClass ?> px-4 py-2"
                             >
                                 <span class="sr-only label"><?= $escaper->escapeHtml(__('Page')) ?></span>
-                                <span><?= $escaper->escapeHtml($localeFormatter->formatNumber($block->getLastPageNum())) ?></span>
+                                <span class="pointer-events-none"><?= $escaper->escapeHtml($localeFormatter->formatNumber($block->getLastPageNum())) ?></span>
                             </a>
                         </li>
                     <?php endif; ?>
@@ -227,16 +235,17 @@ $pagerItemBtnClass = $pagerItemClass
                             <?php $text = $block->getAnchorTextForNext() ? $block->getAnchorTextForNext() : ''; ?>
                             <a
                                 href="<?= $escaper->escapeUrl($block->getNextPageUrl()) . /* @noEscape */ $paginationUrlAnchor ?>"
+                                @click.prevent="$store.category.loadPageWithPager($event.target.href)"
                                 class="<?= $text ? 'link ' : 'action ' ?> next
                                     <?= /* @noEscape */ $pagerItemBtnClass ?> rounded-r-md px-3 py-2 text-gray-500"
                             >
                                 <?php if ($text): ?>
                                     <span class="sr-only label"><?= $escaper->escapeHtml(__('Page')) ?></span>
-                                    <span><?= $escaper->escapeHtml($text) ?></span>
+                                    <span class="pointer-events-none"><?= $escaper->escapeHtml($text) ?></span>
                                 <?php else: ?>
                                     <span
                                         aria-label="<?= $escaper->escapeHtml(__('Next')) ?>"
-                                    ><?= $heroicons->chevronRightHtml('', 20, 20); ?></span>
+                                    ><?= $heroicons->chevronRightHtml('pointer-events-none', 20, 20); ?></span>
                                 <?php endif; ?>
                             </a>
                         <?php else: ?>

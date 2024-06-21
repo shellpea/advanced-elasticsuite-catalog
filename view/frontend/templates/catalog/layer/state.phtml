@@ -21,7 +21,7 @@ use Magento\LayeredNavigation\Block\Navigation\State;
 $heroicons = $viewModels->require(HeroiconsOutline::class);
 ?>
 <?php $filters = $block->getActiveFilters() ?>
-<div class="filter-current" x-data="{ open: true }">
+<div class="filter-current" >
     <?php if (!empty($filters)): ?>
         <div class="bg-container-lighter border border-container p-4 md:px-4" x-data="{ open: true }">
             <div class="filter-options-title flex justify-between items-center cursor-pointer" @click="open = !open">
@@ -51,11 +51,7 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
                         <span>
                             <a class="py-2 px-2 text-center block action remove text-primary hover:text-primary-darker"
                                 href="<?= $escaper->escapeUrl($filter->getRemoveUrl()) ?>"
-                                @click.prevent="
-                                    $store.category.updateLayer($event.target.href);
-                                    if('<?= $escaper->escapeHtml($filter->getName()) ?>' === 'Price' ) {
-                                        $dispatch('slider-update')
-                                    }"
+                                @click.prevent="$store.category.updateLayer($event.target.href)"
                                 aria-label="<?= /* @noEscape */$escaper->escapeHtmlAttr(__('Remove This Item')) ?>">
                                 <?= $heroicons->trashHtml('pointer-events-none', 20, 20); ?>
                             </a>

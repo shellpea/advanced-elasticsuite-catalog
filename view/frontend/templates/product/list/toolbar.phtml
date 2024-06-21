@@ -95,9 +95,6 @@ $additionalOptions = ['page' => 'p'];
          class="toolbar toolbar-products grid grid-cols-4 sm:grid-cols-8 md:grid-cols-4
             lg:grid-cols-8  grid-flow-row gap-2 items-center">
         <?php if ($block->getIsBottom()): ?>
-            <?php if (!$isEnableInfinite): ?>
-                <?= /** @noEscape */  $block->fetchView($block->getTemplateFile('Magento_Catalog::product/list/toolbar/amount.phtml')) ?>
-            <?php endif ?>
             <?= $block->getPagerHtml() ?>
             <?= /** @noEscape */ $block->fetchView($block->getTemplateFile('Magento_Catalog::product/list/toolbar/limiter.phtml')) ?>
         <?php else: ?>

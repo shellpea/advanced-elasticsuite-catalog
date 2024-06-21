@@ -25,25 +25,25 @@ $configurableViewModel = $viewModels->require(ConfigurableViewModel::class);
 $swatchData = $block->getSwatchData();
 
 ?>
-<script>
-    function initLayeredSwatch_<?= $escaper->escapeJs($swatchData['attribute_code']) ?>() {
-        return {
+
+<div class="swatch-attribute swatch-layered <?= $escaper->escapeHtmlAttr($swatchData['attribute_code']) ?>"
+    x-data="{
             getSwatchType(typeNumber) {
-                switch ("" + typeNumber) {
-                    case "1":
-                        return "color"
-                    case "2":
-                        return "image"
-                    case "0":
+                switch ('' + typeNumber) {
+                    case '1':
+                        return 'color'
+                    case '2':
+                        return 'image'
+                    case '0':
                     default:
-                        return "text"
+                        return 'text'
                 }
             },
             getSwatchBackgroundStyle(type, value, image) {
-                if (this.getSwatchType(type) === "color") {
+                if (this.getSwatchType(type) === 'color') {
                     return 'background-color:' + value;
-                } else if (this.getSwatchType(type) === "image") {
-                    return "background: #ffffff url('" + image + "') no-repeat center";
+                } else if (this.getSwatchType(type) === 'image') {
+                    return `background: #ffffff url('${image}') no-repeat center`
                 } else {
                     return '';
                 }
@@ -62,11 +62,10 @@ $swatchData = $block->getSwatchData();
             getTooltipImageStyle() {
                 const type = this.activeTooltipItem.type;
 
-                if (this.getSwatchType(type) === "color") {
+                if (this.getSwatchType(type) === 'color') {
                     return 'background-color:' + this.activeTooltipItem.value + '; width: 110px; height: 90px;';
-                } else if (this.getSwatchType(type) === "image") {
-                    return "background: #ffffff url('" + this.activeTooltipItem.thumb +
-                        "') center center no-repeat; width: 110px; height: 90px;";
+                } else if (this.getSwatchType(type) === 'image') {
+                   return `background: #ffffff url('${this.activeTooltipItem.thumb}') center center no-repeat; width: 110px; height: 90px;`;
                 } else {
                     return 'display:none';
                 }
@@ -85,10 +84,7 @@ $swatchData = $block->getSwatchData();
                 return this.getSwatchType(this.activeTooltipItem.type) !== 'text'
             }
         }
-    }
-</script>
-<div class="swatch-attribute swatch-layered <?= $escaper->escapeHtmlAttr($swatchData['attribute_code']) ?>"
-    x-data="initLayeredSwatch_<?= $escaper->escapeJs($swatchData['attribute_code']) ?>()"
+    "
 >
     <div class="swatch-attribute-options clearfix">
     <template x-for="swatchItem in $store.category.config.items.filterItems.<?= $swatchData['attribute_code'] . 'Filter' ?>">
