@@ -16,13 +16,211 @@ $jsLayout = $this->getJsLayout();
 $datascope = $this->getFilter()->getRequestVar() . 'Filter';
 ?>
 <?php if (!empty($filterItems)): ?>
-    <?= $block->getChildBlock('attribute-filter-js')
-        ->setUniqueId($uniqueId)
-        ->setJsLayout($jsLayout)
-        ->setScope($datascope)
-        ->toHtml() ?>
+    <div class="<?= $escaper->escapeHtml($datascope); ?>" x-data="{
+            options: <?= $escaper->escapeQuote($jsLayout) ?>,
+            filterName: '<?= $datascope ?>',
+            searchLabel: `<?= __('Search (%s)') ?>`,
+            showMoreLabel: `<?= __('Show more') ?>`,
+            showLessLabel: `<?= __('Show less') ?>`,
+            noSearchResultLabel: `<?= __('No value matching the search <b>%s</b>.') ?>`,
+            expanded: false,
+            items: [],
+            ajaxUrl: '',
+            lastSelectIndex: 0,
+            maxSize: 0,
+            displaySearch: false,
+            displayedItems: [],
+            fulltextSearch: null,
+            searchPlaceholder: '',
+            result: 0,
+            init() {
+                Alpine.store('category').hasMoreItems[this.filterName] = this.options.hasMoreItems
+                this.items = this.options.items.map(this.addItemId.bind(this));
 
-    <div class="<?= $escaper->escapeHtml($datascope); ?>" x-data="initSmileAttibute<?= $uniqueId ?>">
+                let lastSelectedIndex = Math.max.apply(null, (this.items.map(
+                    function (v, k) { return v['is_selected'] ? k : 0; }))
+                );
+                this.maxSize = Math.max(this.options.maxSize, lastSelectedIndex + 1);
+
+                this.initSearchPlaceholder();
+                this.onShowLess();
+                this.displaySearch = this.displayShowMore();
+                this.displayedItems = this.getDisplayedItems();
+            },
+            revalidateUrl() {
+                let urlParams = new URLSearchParams(window.location.search).toString();
+                let updatedUrl = !!urlParams && `${this.options.ajaxLoadUrl}&${urlParams}`
+                if (!!updatedUrl && updatedUrl != this.ajaxUrl) {
+                    this.options.hasMoreItems = true
+                    this.ajaxUrl = updatedUrl
+                } else {
+                    this.ajaxUrl = this.options.ajaxLoadUrl
+                }
+            },
+            initSearchPlaceholder: function () {
+                let examples = this.items.slice(0, 2).map(function (item) { return item.label });
+
+                if (this.items.length > 2) {
+                    examples.push('...');
+                }
+
+                // Tip to make html chars interpretable by the browser when the value is get from JS.
+                let placeholder = document.createElement('div');
+                placeholder.innerHTML = this.searchLabel.replace('%s', examples.join(', '));
+
+                this.searchPlaceholder = placeholder.textContent;
+            },
+            onSearchChange: function (event) {
+                let text = event.target.value;
+                if (text.trim() === '') {
+                    this.fulltextSearch = null;
+                    this.onShowLess();
+                } else {
+                    this.fulltextSearch = text;
+                    this.onShowMore();
+                }
+
+                return true;
+            },
+            onSearchFocusOut: function (event) {
+                let text = event.target.value;
+                if (text.trim() === '') {
+                    this.fulltextSearch = null;
+                }
+            },
+            loadAdditionalItems: async function (callback) {
+                const response = await fetch(this.ajaxUrl, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                const data = await response.json()
+                this.items = data.map(this.addItemId.bind(this))
+                this.options.hasMoreItems = false
+
+                if (callback) return callback()
+            },
+            getDisplayedItems: function () {
+                let items = this.items;
+
+                if (this.expanded === false) {
+                    items = this.items.slice(0, this.maxSize);
+                }
+
+                if (this.getFulltextSearch()) {
+                    let searchTokens = this.slugify(this.getFulltextSearch()).split('-');
+                    let lastSearchToken = searchTokens.splice(-1, 1)[0];
+
+                    items = items.filter(function (item) {
+                        let isValidItem = true;
+                        let itemTokens = this.slugify(item.label).split('-');
+                        searchTokens.forEach(function (currentToken) {
+                            if (itemTokens.indexOf(currentToken) === -1) {
+                                isValidItem = false;
+                            }
+                        })
+                        if (isValidItem && lastSearchToken) {
+                            let ngrams = itemTokens.map(function (token) { return token.substring(0, lastSearchToken.length) });
+                            isValidItem = ngrams.indexOf(lastSearchToken) !== -1;
+                        }
+                        return isValidItem;
+                    }.bind(this))
+                }
+                this.result = items.length;
+                return items;
+            },
+            /**
+             * Does the search have a result
+             */
+            hasSearchResult: function () {
+                return this.getDisplayedItems().length > 0
+            },
+
+            /**
+             * Search result message
+             */
+            getSearchResultMessage: function () {
+                return this.noSearchResultLabel.replace('%s', `'` + this.getFulltextSearch() + `'`)
+            },
+
+            getFulltextSearch: function () {
+                return this.fulltextSearch;
+            },
+
+            /**
+             * Callback for the 'Show more' button
+             */
+            onShowMore: async function () {
+                await this.revalidateUrl()
+                if (this.options.hasMoreItems) {
+                    this.loadAdditionalItems(this.onShowMore.bind(this));
+                } else {
+                    this.expanded = true;
+                    Alpine.store('category').config.items.filterItems[this.filterName] = this.getDisplayedItems();
+                }
+
+                this.displayedItems = this.getDisplayedItems();
+            },
+
+            /**
+             * Index the text to be searched.
+             */
+            slugify: function (text) {
+                return text.toString().toLowerCase()
+                    .replace(/\s+/g, '-')                                              // Replace spaces with -
+                    .replace(/[^\w\u0400-\u052F\u2DE0-\u2DFF\uA640-\uA69F'\-]+/g, '')  // Remove all non-word chars
+                    .replace(/\-\-+/g, '-')                                            // Replace multiple - with single -
+                    .replace(/^-+/, '')                                                // Trim - from start of text
+            },
+
+            /**
+             * Callback for the 'Show less' button
+             */
+            onShowLess: async function () {
+                await this.revalidateUrl()
+                this.expanded = false;
+                Alpine.store('category').config.items.filterItems[this.filterName] = this.getDisplayedItems();
+                this.displayedItems = this.getDisplayedItems();
+            },
+
+            /**
+             * Check if the filter can be expanded
+             *
+             * @returns {boolean}
+             */
+            enableExpansion: function () {
+                return this.options.hasMoreItems || this.items.length > this.maxSize;
+            },
+
+            /**
+             * Displays the 'Show More' link
+             *
+             * @returns {*|boolean}
+             */
+            displayShowMore: function () {
+                return this.enableExpansion() && this.expanded === false && !this.getFulltextSearch();
+            },
+
+            /**
+             * Displays the 'Show Less' link
+             *
+             * @returns {*|boolean}
+             */
+            displayShowLess: function () {
+                return this.enableExpansion() && this.expanded === true && !this.getFulltextSearch();
+            },
+
+            /**
+             * Add an id to items.
+             */
+            addItemId: function (item) {
+                item.id = Math.floor(Math.random() * 1000000) + '_option_';
+                item.displayProductCount = this.options.displayProductCount && (item.count >= 1);
+
+                return item;
+            },
+    }">
         <div class="field search" x-show="displaySearch">
             <div class="control">
                 <input class="filter-search w-full mb-2" type="text" autocomplete="off" :placeholder="searchPlaceholder"

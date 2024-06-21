@@ -2,9 +2,16 @@
 
 use Magento\Framework\Escaper;
 use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
+use Hyva\Theme\ViewModel\StoreConfig;
 
 /** @var Escaper $escaper */
 /** @var AdvancedCatalog $block */
+/** @var StoreConfig $storeConfig */
+$storeConfig = $viewModels->require(StoreConfig::class);
+
+/** @var bool $isEnableInfinite */
+$isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_catalog/infinite_scroll/active');
+
 ?>
 
 <script>
@@ -32,12 +39,17 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
             },
 
             generateSentence(current, total) {
+
                 if (total > this.config.items.pageSize) {
-                    return `Items 1-${current} of ${total}`;
+                    <?php if ($isEnableInfinite): ?>
+                    return `<?= __('Items') ?> 1-${current} <?= __('of') ?> ${total}`;
+                    <?php else: ?>
+                    return `<?= __('Items') ?> ${this.config.items.pageSize * (this.config.items.curPage - 1) + 1}-${current} <?= __('of') ?> ${total}`;
+                    <?php endif; ?>
                 } else if (total === 1) {
-                    return `1 Item`;
+                    return `1 <?= __('Items') ?>`;
                 } else {
-                    return `${total} Items`;
+                    return `${total} <?= __('Items') ?>`;
                 }
             },
             get isHidden() {
@@ -121,6 +133,11 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
                     this.config.items.pageSize = response.pageSize;
                     this.config.items.curPage = response.curPage;
                     this.loadActualFilters(response);
+                    const newPagination = new DOMParser().parseFromString(response.productList, 'text/html').querySelector('[aria-label=pagination]');
+                    const pagination = document.querySelector('[aria-label=pagination]');
+                    if(pagination) {
+                        pagination.replaceWith(newPagination);
+                    }
                     const newActiveFilter = new DOMParser().parseFromString(response.activeFilter, 'text/html')
                         .querySelector('.filter-current');
                     const activeFilter = document.querySelector('.filter-current');
@@ -142,6 +159,18 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
                     const updatedUrl = this.processPageUrl(url);
                     const result = await this.fetchPageData(updatedUrl);
                     await this.afterPageLoad(result, updatedUrl);
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            async loadPageWithPager(url) {
+                this.isLoading = true;
+                try {
+                    const updatedUrl = this.processPageUrl(url);
+                    const result = await this.fetchPageData(updatedUrl);
+                    await this.afterPageLoadPager(result, updatedUrl);
                 } catch (error) {
                     console.error(error);
                 } finally {
@@ -173,6 +202,28 @@ use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
                     await this.replaceFilterItems(response);
                     await this.replaceActiveFilter(response);
                     await this.replaceProductList(response);
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            async afterPageLoadPager(response, url) {
+                this.isLoading = true;
+                try {
+                    const newUrl = this.processPageUrl(url);
+                    await this.updatePageState(newUrl, response);
+                    await this.replaceFilterItems(response);
+                    await this.replaceActiveFilter(response);
+                    const newPagination = new DOMParser().parseFromString(response.productList, 'text/html').querySelector('[aria-label=pagination]');
+                    const pagination = document.querySelector('[aria-label=pagination]');
+                    if (pagination) {
+                        pagination.replaceWith(newPagination);
+                    }
+                    const newProductList = new DOMParser().parseFromString(response.productList, 'text/html')
+                        .querySelector('.products.wrapper').children;
+                    const productList = document.querySelector('.products.wrapper');
+                    productList.replaceChildren(...newProductList);
                 } catch (error) {
                     console.error(error);
                 } finally {
