@@ -35,7 +35,7 @@ Direct Mode Active: Yes/No
 ![Admin Configurations](https://user-images.githubusercontent.com/55882198/236669994-8ddb17f9-8f37-445d-9bf0-6e039c6ddd67.png)
 
 >[!TIP]
-> If yo have Varnish Cache issue - update sub vcl_hash in your varnish VCL by adding code below
+> If you have Varnish Cache issue - update sub vcl_hash in your varnish VCL by adding code below
 ```
  # To make sure XMLHttp calls have their own cache
     if (req.http.X-Requested-With) {
