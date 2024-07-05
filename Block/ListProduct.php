@@ -99,10 +99,10 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
             $prevProductCollection->addAttributeToSelect('*');
             $prevProductCollection->addCategoryFilter($category);
 
-            foreach ($this->getRequest()->getParams() as $attributeCode => $optionLabels) {
-                if (is_array($optionLabels)) {
-                    foreach ($optionLabels as $optionLabel) {
-                        if ($optionId = $this->getOptionIdByLabel($attributeCode, $optionLabel)) {
+            foreach ($this->getRequest()->getParams() as $attributeCode => $optionLabel) {
+                if (is_array($optionLabel)) {
+                    foreach ($optionLabel as $optionLabelItem) {
+                        if ($optionId = $this->getOptionIdByLabel($attributeCode, $optionLabelItem)) {
                             $prevProductCollection->addFieldToFilter($attributeCode, $optionId);
                         }
                     }
