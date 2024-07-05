@@ -1,5 +1,5 @@
 # Magento 2 Advanced Elastisuite Catalog Module
-Magento 2 module enhancing ElasticSuite Catalog features for Hyva Theme. 
+Magento 2 module enhancing ElasticSuite Catalog features for Hyva Theme.
 Adds smart ajax filtering, dynamic loading of products with infinite scroll or with dynamic pagination.
 
 ## Key Features
@@ -20,7 +20,7 @@ composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.0.0"
 ```
 ### Hyva Theme version >=1.2.x || 1.3.x
 ```
-composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.2.7"
+composer require "shellpea/magento-advanced-elasticsuite-catalog":"^1.2.8"
 ```
 
 ## Admin Configurations
