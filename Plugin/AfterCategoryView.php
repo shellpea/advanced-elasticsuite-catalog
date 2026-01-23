@@ -7,6 +7,7 @@ namespace Shellpea\AdvancedElasticsuiteCatalog\Plugin;
 use Magento\Catalog\Controller\Category\View;
 use Magento\Framework\View\Result\Page;
 use Shellpea\AdvancedElasticsuiteCatalog\Model\AjaxResponse;
+use Magento\Framework\Controller\Result\Forward;
 
 class AfterCategoryView
 {
@@ -26,11 +27,11 @@ class AfterCategoryView
 
     /**
      * @param View $view
-     * @param Page $page
+     * @param Page|Forward $page
      *
      * @return mixed
      */
-    public function afterExecute(View $view, Page $page)
+    public function afterExecute(View $view, Page | Forward $page)
     {
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
         if (!$isAjax) {
