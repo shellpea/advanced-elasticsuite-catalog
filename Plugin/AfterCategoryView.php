@@ -27,7 +27,7 @@ class AfterCategoryView
 
     /**
      * @param View $view
-     * @param Page $page
+     * @param Page|Forward $page
      *
      * @return mixed
      */
