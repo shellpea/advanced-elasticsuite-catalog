@@ -167,7 +167,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
     public function getProductsFromPrevPagesSearch(): \Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection|string
     {
         $currentPage = (int) $this->getRequest()->getParam('p', 1);
-        if ($currentPage > 1) {
+        if (!$this->getRequest()->isAjax() && $currentPage > 1) {
             $collection = $this->getSearchCollection();
             $collection->setCurPage($currentPage - 1)
                 ->setPageSize($this->getPageSize() * ($currentPage - 1));

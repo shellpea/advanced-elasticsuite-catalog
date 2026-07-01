@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shellpea\AdvancedElasticsuiteCatalog\Plugin;
 
 use Magento\CatalogSearch\Controller\Result\Index;
+use Magento\Framework\App\Request\Http as HttpRequest;
 use Shellpea\AdvancedElasticsuiteCatalog\Model\AjaxResponse;
 
 class AfterSearchView
@@ -15,24 +16,32 @@ class AfterSearchView
     protected $ajaxResponse;
 
     /**
+     * @var HttpRequest
+     */
+    protected HttpRequest $request;
+
+    /**
      * @param AjaxResponse $ajaxResponse
+     * @param HttpRequest  $request
      */
     public function __construct(
-        AjaxResponse $ajaxResponse
+        AjaxResponse $ajaxResponse,
+        HttpRequest $request
     ) {
         $this->ajaxResponse = $ajaxResponse;
+        $this->request = $request;
     }
 
     /**
      * @param Index $view
+     * @param mixed $result
      *
-     * @return ?\Magento\Framework\Controller\Result\Json
+     * @return mixed
      */
-    public function afterExecute(Index $view): ?\Magento\Framework\Controller\Result\Json
+    public function afterExecute(Index $view, $result)
     {
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
-        if (!$isAjax) {
-            return null;
+        if (!$this->request->isXmlHttpRequest()) {
+            return $result;
         }
 
         return $this->ajaxResponse

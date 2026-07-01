@@ -239,6 +239,11 @@ class AjaxResponse
         foreach ($filter->getItems() as $item) {
             $resultOption = $this->getResultOption($item, $attribute);
             $attributeOptionId = $this->swatchHelper->getOptionIds($attribute, $item['label']);
+
+            if (empty($attributeOptionId)) {
+                continue;
+            }
+
             $swatchData = $this->swatchHelper->getSwatchesByOptionsId($attributeOptionId);
             $swatchThumbPath = $this->mediaHelper->getSwatchAttributeImage('swatch_thumb', $swatchData[$attributeOptionId[0]]['value']);
             $swatchImagePath = $this->mediaHelper->getSwatchAttributeImage('swatch_image', $swatchData[$attributeOptionId[0]]['value']);

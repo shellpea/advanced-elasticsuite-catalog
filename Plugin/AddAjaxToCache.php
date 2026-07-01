@@ -6,16 +6,16 @@ namespace Shellpea\AdvancedElasticsuiteCatalog\Plugin;
 
 use Magento\Framework\App\Http\Context;
 use Magento\Framework\App\PageCache\Identifier;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\Http;
 use Magento\Framework\Serialize\Serializer\Json;
 
 class AddAjaxToCache
 {
     /**
-     * @var RequestInterface $request
+     * @var HttpRequest $request
      */
-    protected RequestInterface $request;
+    protected HttpRequest $request;
     /**
      * @var Context $context
      */
@@ -26,12 +26,12 @@ class AddAjaxToCache
     protected Json $json;
 
     /**
-     * @param RequestInterface $request
-     * @param Context          $context
-     * @param Json             $json
+     * @param HttpRequest $request
+     * @param Context     $context
+     * @param Json        $json
      */
     public function __construct(
-        RequestInterface $request,
+        HttpRequest $request,
         Context $context,
         Json $json
     ) {
@@ -41,16 +41,15 @@ class AddAjaxToCache
     }
 
     /**
-     * @param Identifier $subject
-     * @param string     $result
+     * @param Identifier $_subject
+     * @param string     $_result
      *
      * @return string
      */
-    public function afterGetValue(Identifier $subject, string $result): string
+    public function afterGetValue(Identifier $_subject, string $_result): string
     {
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
         $data = [
-            $isAjax,
+            $this->request->isXmlHttpRequest(),
             $this->request->isSecure(),
             $this->request->getUriString(),
             $this->request->get(Http::COOKIE_VARY_STRING)

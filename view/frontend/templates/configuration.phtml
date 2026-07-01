@@ -259,7 +259,6 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
 
                 const filteredItems = Array.from(newSlidersContent)
                     .filter(item => sliderItems.includes(item.dataset.filterName));
-                console.log(filteredItems);
                 filteredItems.map(item => {
                     const slider = document.querySelector(`[data-filter-name=${item.dataset.filterName}]`)
                     slider.replaceWith(item);
@@ -268,7 +267,6 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
             },
             async replaceFilterItems(response) {
                 const currentFiltersList = this.getMultipleFilterValues();
-                console.log(currentFiltersList);
 
                 const newFiltersContent = new DOMParser().parseFromString(response.listFilterOptions, 'text/html')
                     .querySelectorAll('.filter-content .filter-option');

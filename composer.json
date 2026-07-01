@@ -1,7 +1,7 @@
 {
   "name": "shellpea/magento-advanced-elasticsuite-catalog",
   "description": "Magento 2 module improves ElasticSuite. Adds smart ajax filtering, dynamic product loading. Compatible with Hyva Theme",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "require": {
     "smile/elasticsuite": "~2.10.9|~2.11.0",
     "hyva-themes/magento2-smile-elasticsuite": "^1.2"
