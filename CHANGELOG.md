@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.11] - 2026-07-14
+
+### Changed
+
+- Dependency updated: `smile/elasticsuite` constraint extended to `~2.10.9|~2.11.0|~2.12.0`.
+  Verified against ElasticSuite 2.12 on a Hyvä project: no code-level incompatibilities,
+  `setup:di:compile` passes, and AJAX filtering works on both category and search results pages.
+
 ## [1.2.10] - 2026-07-01
 
 ### Fixed
