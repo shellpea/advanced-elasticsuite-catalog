@@ -5,12 +5,14 @@ Adds AJAX-based layered navigation, infinite scroll, and dynamic pagination — 
 
 ## Requirements
 
-| Dependency | Version |
-|---|---|
-| PHP | `^7.4 \| ^8.0` |
-| `smile/elasticsuite` | `~2.10.9 \| ~2.11.0` |
-| `hyva-themes/magento2-smile-elasticsuite` | `^1.2` |
-| Hyvä Theme | `>=1.2.x` |
+
+| Dependency                                | Version                     |
+| ----------------------------------------- | ---------------------------- |
+| PHP                                       | `^7.4 \| ^8.0`                      |
+| `smile/elasticsuite`                      | `~2.10.9\|~2.11.0\|~2.12.0` |
+| `hyva-themes/magento2-smile-elasticsuite` | `^1.2`                      |
+| Hyvä Theme                                | `>=1.2.x`                   |
+
 
 ## Features
 
@@ -41,22 +43,30 @@ bin/magento setup:di:compile
 **Stores → Configuration → Smile ElasticSuite → Advanced ElasticSuite Catalog**
 
 ### General
-| Field | Description |
-|---|---|
+
+
+| Field  | Description               |
+| ------ | ------------------------- |
 | Active | Enable/disable the module |
 
+
 ### Infinite Scroll
-| Field | Description |
-|---|---|
-| Active | Enable infinite scroll. When disabled, standard pagination is used |
-| Button Label | Text on the "load more" button |
+
+
+| Field        | Description                                                        |
+| ------------ | ------------------------------------------------------------------ |
+| Active       | Enable infinite scroll. When disabled, standard pagination is used |
+| Button Label | Text on the "load more" button                                     |
+
 
 ![Infinite Scroll button](https://user-images.githubusercontent.com/55882198/236670329-ba761d13-45a4-41a5-8723-f130d88926dd.png)
 
 ### Slider Configuration
-| Field | Description |
-|---|---|
+
+| Field              | Description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | Direct Mode Active | Apply slider range immediately on change without clicking OK |
+
 
 ![Admin Configurations](https://user-images.githubusercontent.com/55882198/236669994-8ddb17f9-8f37-445d-9bf0-6e039c6ddd67.png)
 
