@@ -14,7 +14,7 @@
         <referenceBlock name="category.product.type.details.renderers">
             <block class="Magento\Swatches\Block\Product\Renderer\Listing\Configurable"
                    name="category.product.type.details.renderers.configurable" as="configurable"
-                   template="Shellpea_AdvancedElasticsuiteCatalog::swatch/product/listing/renderer.phtml"
+                   template="Magento_Swatches::product/listing/renderer.phtml"
                    ifconfig="catalog/frontend/show_swatches_in_product_list"
             />
         </referenceBlock>

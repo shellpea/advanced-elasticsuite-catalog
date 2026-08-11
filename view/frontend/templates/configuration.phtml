@@ -3,10 +3,14 @@
 use Magento\Framework\Escaper;
 use Shellpea\AdvancedElasticsuiteCatalog\Block\AdvancedCatalog;
 use Hyva\Theme\ViewModel\StoreConfig;
+use Hyva\Theme\ViewModel\HyvaCsp;
 
 /** @var Escaper $escaper */
 /** @var AdvancedCatalog $block */
 /** @var StoreConfig $storeConfig */
+/** @var HyvaCsp $hyvaCsp */
+
+
 $storeConfig = $viewModels->require(StoreConfig::class);
 
 /** @var bool $isEnableInfinite */
@@ -298,3 +302,4 @@ $isEnableInfinite = $storeConfig->getStoreConfig('smile_advanced_elasticsuite_ca
         })
     })
 </script>
+<?php $hyvaCsp->registerInlineScript() ?>
