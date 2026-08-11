@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.2.12] - 2026-07-14
+
+### Fixed
+
+- **Hyvä 1.5 compatibility.** Dropped the outdated fork of `swatch/product/listing/renderer.phtml`. Both
+  `hyva_catalog_category_view.xml` and `hyva_catalogsearch_result_index.xml` now point
+  `category.product.type.details.renderers.configurable` at the theme's own
+  `Magento_Swatches::product/listing/renderer.phtml`, so the module follows whichever Hyvä version is installed.
+  The fork rendered the shared `product.swatch.item` block once inside an Alpine `<template x-for>` and passed it
+  only `product_id` / `attribute_id`. As of Hyvä 1.5 that block expands options server-side and throws
+  `RuntimeException: product.swatch.item rendered without "option" data` when the fork is used.
+  Note the layout override is still required: `Hyva_SmileElasticsuite` 1.2.8 points the same block at its own
+  pre-1.5 template, which fails identically on Hyvä 1.5.x. Its only functional addition over the theme template
+  was the drag-to-scroll swatch slider.
+  Verified on Magento 2.4.8-p3 / Hyvä 1.5.2 / Hyva_SmileElasticsuite 1.2.8: category page, search results page,
+  and the module's AJAX filter response (`?color=Purple` with `X-Requested-With`) all render swatches with no
+  exception.
+
+### Changed
+
+- **Phase 2 — Architecture & Code Quality.** Internal refactor with no public API or behavioral change.
+- `Block/AdvancedCatalog`: removed the duplicated filter-option helpers (`isOptionVisible()`,
+  `isShowEmptyResults()`, `isOptionDisabled()`, `getUnusedOption()`, `getOptionViewData()`) that were
+  defined verbatim in both `AdvancedCatalog` and `Model/AjaxResponse`. All filter-option logic now lives
+  solely in `AjaxResponse`, which `AdvancedCatalog` already delegates to via `getFilterItems()`.
+- `Block/AdvancedCatalog::getProductList()`: removed the dead `$productList;` statement (declared,
+  never assigned, immediately overwritten).
+- `Block/ListProduct`: added `declare(strict_types=1)` for consistency with the rest of the module, and
+  added explicit `(int)`/`(bool)` casts on the `getPageSize()` and `isInfinityActive()` return values
+  (previously relying on implicit coercion from `ScopeConfigInterface::getValue()`).
+- `Model/AjaxResponse`: added parameter type hints to the private filter-processing helpers
+  (`processFilter()`, `processAttributeFilter()`, `processSwatchAttributeFilter()`,
+  `processNonSwatchAttributeFilter()`, `processNonAttributeFilter()`, `getResultOption()`) to strengthen
+  static analysis and clear the outstanding intelephense warnings.
+
 ## [1.2.11] - 2026-07-14
 
 ### Changed

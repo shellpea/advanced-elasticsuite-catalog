@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shellpea\AdvancedElasticsuiteCatalog\Block;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
@@ -123,7 +125,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
 
     public function getPageSize(): int
     {
-        return $this->scopeConfig->getValue(
+        return (int) $this->scopeConfig->getValue(
             'catalog/frontend/grid_per_page',
             ScopeInterface::SCOPE_STORES
         );
@@ -131,7 +133,7 @@ class ListProduct extends \Magento\Catalog\Block\Product\ListProduct
 
     public function isInfinityActive(): bool
     {
-        return $this->scopeConfig->getValue(
+        return (bool) $this->scopeConfig->getValue(
             Config::INFINITE_ACTIVE,
             ScopeInterface::SCOPE_STORES
         );

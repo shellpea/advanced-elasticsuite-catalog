@@ -11,7 +11,6 @@ use Magento\Framework\View\Layout;
 use Smile\ElasticsuiteCatalog\Model\ResourceModel\Product\Fulltext\Collection;
 use Smile\ElasticsuiteCatalog\Block\Navigation;
 use Shellpea\AdvancedElasticsuiteCatalog\Provider\Config;
-use Magento\Catalog\Model\Layer\Filter\Item as FilterItem;
 use Smile\ElasticsuiteSwatches\Helper\Swatches;
 use Magento\Swatches\Helper\Media;
 use Shellpea\AdvancedElasticsuiteCatalog\Model\AjaxResponse;
@@ -109,7 +108,6 @@ class AdvancedCatalog extends Template
     {
         if ($this->productCollection === null) {
             /** @var ListProduct $productList */
-            $productList;
             if ($this->isSearch()) {
                 $productList = $this->layout->getBlock('search_result_list');
             } else {
@@ -122,82 +120,6 @@ class AdvancedCatalog extends Template
         return $this->productCollection;
     }
 
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getOptionViewData(FilterItem $filterItem): array
-    {
-        $customStyle = '';
-
-        $linkToOption = $filterItem->getUrl();
-
-        if ($this->isOptionDisabled($filterItem)) {
-            $customStyle = 'disabled';
-            $linkToOption = 'javascript:void();';
-        }
-
-        if ($filterItem->getIsSelected()) {
-            $customStyle = ' border-container-lighter ring ring-primary ring-opacity-50';
-        }
-
-        return [
-            'label' => $filterItem->getLabel(),
-            'link' => $linkToOption,
-            'custom_style' => $customStyle,
-        ];
-    }
-
-
-    /**
-     * Check if option should be visible
-     *
-     * @param FilterItem $filterItem
-     *
-     * @return bool
-     */
-    protected function isOptionVisible(FilterItem $filterItem, $attribute): bool
-    {
-        return !($this->isOptionDisabled($filterItem) && $this->isShowEmptyResults($attribute));
-    }
-
-    /**
-     * Check if attribute values should be visible with no results
-     *
-     * @return bool
-     */
-    protected function isShowEmptyResults($attribute): bool
-    {
-        return $attribute->getIsFilterable() != '1';
-    }
-
-    /**
-     * Check if option should be disabled
-     *
-     * @param FilterItem $filterItem
-     *
-     * @return bool
-     */
-    protected function isOptionDisabled(FilterItem $filterItem): bool
-    {
-        return !$filterItem->getCount();
-    }
-
-    /**
-     * Get view data for option with no results
-     *
-     * @param FilterItem $filterItem
-     *
-     * @return array
-     */
-    protected function getUnusedOption(FilterItem $filterItem): array
-    {
-        return [
-            'label' => $filterItem->getLabel(),
-            'link' => 'javascript:void();',
-            'custom_style' => 'disabled'
-        ];
-    }
 
     /**
      * Get filter items
